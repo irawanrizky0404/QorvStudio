@@ -79,7 +79,7 @@ export default async function ProductDetailPage({
 
   const name = pickLocale(product.name, locale);
   const requirements = pickLocaleList(product.requirements, locale);
-  const related = getProductsByIds(product.relatedProductIds).filter(
+  const related = (await getProductsByIds(product.relatedProductIds)).filter(
     (item) => item.status === 'published' && item.id !== product.id,
   );
 

@@ -1,20 +1,21 @@
-﻿import 'server-only';
+import 'server-only';
 
 import { customAlphabet } from 'nanoid';
 import type { ListQuery, Paginated } from '../types';
 import { DEFAULT_PER_PAGE, MAX_PER_PAGE, RepositoryError } from '../types';
+import { getDriver, seededKey } from '../driver';
 
 /**
- * In-memory mock store - Phase 1 only.
+ * Koleksi terurut dengan penyaringan, paginasi, dan penyimpanan.
  *
- * Server-side by design. If this lived in the client, the admin panel would
- * mutate browser memory while public Server Components read server memory, and
- * the two would never agree. Mutations go through Server Actions instead, which
- * is also the shape Phase 5 uses.
+ * Setiap operasi membaca koleksinya dari driver lebih dulu, bukan menyimpan
+ * salinan di memori proses. Terdengar boros, tapi itulah yang membuatnya benar
+ * di serverless: dua permintaan berurutan bisa mendarat di instance berbeda,
+ * jadi salinan yang dipegang instance mana pun langsung basi begitu instance
+ * lain menulis.
  *
- * ponytail: module-level state, single process. Survives navigation, resets on
- * server restart and does not span serverless instances - acceptable because
- * Phase 5 replaces it with Vercel KV. See PROJECT_MEMORY.md.
+ * Semua metode mutasi berbentuk baca → ubah → tulis penuh. Lihat catatan
+ * concurrency di `../driver.ts`.
  */
 
 const nanoid = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 12);
@@ -27,15 +28,16 @@ export function nowIso(): string {
   return new Date().toISOString();
 }
 
-/* ── Network simulation ───────────────────────────────────────────────────── */
-
-const MIN_LATENCY_MS = 500;
-const MAX_LATENCY_MS = 1500;
+/* ── Simulasi kegagalan ───────────────────────────────────────────────────── */
 
 /**
- * Set to a path fragment to force the next matching read to fail - this is how
- * error states get demonstrated without breaking the app. Example:
- *   forceFailure('projects')  → the next projects list rejects once.
+ * Memaksa pembacaan berikutnya gagal sekali — dipakai untuk mendemokan keadaan
+ * error tanpa merusak aplikasi.
+ *
+ * Dulu di sini juga ada penundaan buatan 500–1500 ms untuk meniru latensi
+ * jaringan. Itu dicabut: dengan penyimpanan sungguhan latensinya sudah nyata,
+ * dan menambahkan satu detik lagi ke setiap pembacaan hanya membuat situs
+ * terasa rusak.
  */
 let failureTarget: string | null = null;
 
@@ -43,17 +45,14 @@ export function forceFailure(target: string | null): void {
   failureTarget = target;
 }
 
-export async function simulateNetwork(label: string): Promise<void> {
-  const delay = MIN_LATENCY_MS + Math.random() * (MAX_LATENCY_MS - MIN_LATENCY_MS);
-  await new Promise((resolve) => setTimeout(resolve, delay));
-
+export function checkFailure(label: string): void {
   if (failureTarget && label.includes(failureTarget)) {
     failureTarget = null;
     throw new RepositoryError(`Simulated failure for "${label}"`, 'INTERNAL');
   }
 }
 
-/* ── Collection ───────────────────────────────────────────────────────────── */
+/* ── Koleksi ──────────────────────────────────────────────────────────────── */
 
 interface Sortable {
   id: string;
@@ -68,34 +67,41 @@ interface Sortable {
 interface CollectionConfig<T extends Sortable> {
   label: string;
   seed: T[];
-  /** Free-text search across the fields that matter for this entity. */
+  /** Pencarian teks bebas pada kolom yang relevan untuk entitas ini. */
   matchesSearch(item: T, term: string): boolean;
-  /** Category / type filter. Return true when the item passes. */
+  /** Penyaring kategori/tipe. Kembalikan true bila item lolos. */
   matchesCategory?(item: T, category: string): boolean;
-  /** Value used by the `title` sort. */
+  /** Nilai yang dipakai oleh pengurutan `title`. */
   sortTitle(item: T): string;
 }
 
-export class MockCollection<T extends Sortable> {
-  private items: T[];
+export class Collection<T extends Sortable> {
+  private cachedKey: string | null = null;
 
-  constructor(private readonly config: CollectionConfig<T>) {
-    // Deep clone so mutations never write back into the seed module.
-    this.items = structuredClone(config.seed);
+  constructor(private readonly config: CollectionConfig<T>) {}
+
+  /* Ditunda sampai dipakai: `seededKey` menanyai driver, dan driver tidak boleh
+   * dipilih saat modul dievaluasi. Lihat catatan di `getDriver`. */
+  private get key(): string {
+    return (this.cachedKey ??= seededKey(this.config.label, this.config.seed));
   }
 
-  /** Direct, un-delayed access for internal cross-entity work. */
-  raw(): T[] {
-    return this.items;
+  /** Snapshot seluruh koleksi. Titik masuk semua operasi lain. */
+  async read(): Promise<T[]> {
+    checkFailure(this.config.label);
+    return getDriver().loadOrSeed<T[]>(this.key, () => structuredClone(this.config.seed));
+  }
+
+  private async write(items: T[]): Promise<void> {
+    await getDriver().save(this.key, items);
   }
 
   async list(query: ListQuery = {}): Promise<Paginated<T>> {
-    await simulateNetwork(this.config.label);
-    return this.listSync(query);
+    return this.filter(await this.read(), query);
   }
 
-  /** Same filtering without the artificial delay - used by composed reads. */
-  listSync(query: ListQuery = {}): Paginated<T> {
+  /** Penyaringan yang sama di atas snapshot yang sudah dibaca pemanggil. */
+  filter(source: T[], query: ListQuery = {}): Paginated<T> {
     const {
       search,
       category,
@@ -107,7 +113,7 @@ export class MockCollection<T extends Sortable> {
       includeDrafts = false,
     } = query;
 
-    let result = [...this.items];
+    let result = [...source];
 
     if (!includeDrafts) {
       result = result.filter((item) => item.status === 'published');
@@ -118,7 +124,9 @@ export class MockCollection<T extends Sortable> {
     }
 
     if (featured !== undefined) {
-      result = result.filter((item) => (item as unknown as { featured: boolean }).featured === featured);
+      result = result.filter(
+        (item) => (item as unknown as { featured: boolean }).featured === featured,
+      );
     }
 
     if (category && category !== 'all' && this.config.matchesCategory) {
@@ -160,67 +168,77 @@ export class MockCollection<T extends Sortable> {
   }
 
   async getBySlug(slug: string): Promise<T | null> {
-    await simulateNetwork(`${this.config.label}:${slug}`);
-    return this.items.find((item) => item.slug === slug) ?? null;
+    const items = await this.read();
+    return items.find((item) => item.slug === slug) ?? null;
   }
 
   async getById(id: string): Promise<T | null> {
-    await simulateNetwork(`${this.config.label}:${id}`);
-    return this.items.find((item) => item.id === id) ?? null;
+    const items = await this.read();
+    return items.find((item) => item.id === id) ?? null;
   }
 
-  getByIdSync(id: string): T | null {
-    return this.items.find((item) => item.id === id) ?? null;
-  }
-
-  getManySync(ids: string[]): T[] {
+  async getMany(ids: string[]): Promise<T[]> {
+    const items = await this.read();
     return ids
-      .map((id) => this.items.find((item) => item.id === id))
+      .map((id) => items.find((item) => item.id === id))
       .filter((item): item is T => item !== undefined);
   }
 
-  /** Rejects a slug already taken by a different record. */
-  assertSlugFree(slug: string, exceptId?: string): void {
-    const clash = this.items.find((item) => item.slug === slug && item.id !== exceptId);
+  /** Menolak slug yang sudah dipakai record lain. */
+  private assertSlugFree(items: T[], slug: string, exceptId?: string): void {
+    const clash = items.find((item) => item.slug === slug && item.id !== exceptId);
     if (clash) {
       throw new RepositoryError(`Slug "${slug}" is already in use`, 'CONFLICT');
     }
   }
 
-  insert(item: T): T {
-    this.assertSlugFree(item.slug);
-    this.items.push(item);
+  async nextOrder(): Promise<number> {
+    const items = await this.read();
+    return items.length === 0 ? 0 : Math.max(...items.map((item) => item.order)) + 1;
+  }
+
+  async insert(item: T): Promise<T> {
+    const items = await this.read();
+    this.assertSlugFree(items, item.slug);
+    await this.write([...items, item]);
     return item;
   }
 
-  replace(id: string, next: T): T {
-    const index = this.items.findIndex((item) => item.id === id);
+  async replace(id: string, next: T): Promise<T> {
+    const items = await this.read();
+    const index = items.findIndex((item) => item.id === id);
     if (index === -1) {
       throw new RepositoryError(`No ${this.config.label} with id "${id}"`, 'NOT_FOUND');
     }
-    this.assertSlugFree(next.slug, id);
-    this.items[index] = next;
+    this.assertSlugFree(items, next.slug, id);
+    await this.write(items.map((item, i) => (i === index ? next : item)));
     return next;
   }
 
-  delete(id: string): T {
-    const index = this.items.findIndex((item) => item.id === id);
-    if (index === -1) {
+  async delete(id: string): Promise<T> {
+    const items = await this.read();
+    const removed = items.find((item) => item.id === id);
+    if (!removed) {
       throw new RepositoryError(`No ${this.config.label} with id "${id}"`, 'NOT_FOUND');
     }
-    const [removed] = this.items.splice(index, 1);
-    return removed as T;
+    await this.write(items.filter((item) => item.id !== id));
+    return removed;
   }
 
-  /** Rewrites `order` to match the given id sequence. */
-  reorder(ids: string[]): void {
-    ids.forEach((id, index) => {
-      const item = this.items.find((entry) => entry.id === id);
-      if (item) item.order = index;
-    });
+  /** Menulis ulang `order` mengikuti urutan id yang diberikan. */
+  async reorder(ids: string[]): Promise<void> {
+    const items = await this.read();
+    const position = new Map(ids.map((id, index) => [id, index]));
+    await this.write(
+      items.map((item) => {
+        const next = position.get(item.id);
+        return next === undefined ? item : { ...item, order: next };
+      }),
+    );
   }
 
-  nextOrder(): number {
-    return this.items.length === 0 ? 0 : Math.max(...this.items.map((item) => item.order)) + 1;
+  /** Menulis kembali seluruh koleksi — dipakai penulisan lintas entitas. */
+  async writeAll(items: T[]): Promise<void> {
+    await this.write(items);
   }
 }

@@ -66,9 +66,18 @@ Next.js 16 (App Router) · React 19 · TypeScript strict · Tailwind CSS v4
 (konfigurasi `@theme` di CSS) · Zod · React Hook Form · Zustand · Lenis ·
 Radix UI · lucide-react
 
-Tanpa basis data. Lapisan repositori di `src/lib/repo` menyimpan data di memori
-dan diisi dari `src/lib/mock-data`; penyimpanan permanen tinggal mengganti isi
-`repo` tanpa menyentuh halaman atau formulir.
+Penyimpanan dipilih dari environment, lewat satu berkas — `src/lib/repo/driver.ts`:
+
+| | Lokal | Produksi |
+| --- | --- | --- |
+| Data | Memori proses | Upstash Redis |
+| Unggahan | `public/uploads/` | Vercel Blob |
+
+Tanpa kredensial, `npm run dev` jalan apa adanya. Dengan kredensial, kode yang
+sama menulis ke penyimpanan sungguhan — tidak ada cabang lain di aplikasi.
+Menjalankan produksi tanpa Redis akan gagal keras, bukan diam-diam memakai
+memori: panel yang kelihatan menyimpan padahal datanya hilang jauh lebih mahal
+daripada error saat boot.
 
 Tanpa GSAP di bundel situs publik. Reveal memakai `IntersectionObserver`, dan
 Lenis diputar oleh `requestAnimationFrame` biasa.
@@ -211,14 +220,35 @@ kemasan, 3D, dan cetak. Bukan spesifikasi situs.
 
 ---
 
-## Sebelum produksi
+## Deploy
 
-- Ganti `ADMIN_SECRET` di `.env.local` — sesi lama akan gugur, itu memang tujuannya
-- `src/app/actions/upload.ts` menulis ke `public/uploads/`; filesystem Vercel
-  read-only, jadi bagian tulisnya harus diganti Vercel Blob
+```bash
+vercel login                        # akun pemilik proyek
+vercel link
+vercel integration add upstash      # → UPSTASH_REDIS_REST_URL + _TOKEN
+```
+
+Lalu buat store Blob di dashboard (**Storage › Create › Blob**) supaya
+`BLOB_READ_WRITE_TOKEN` ikut terpasang, dan set `ADMIN_EMAIL`, `ADMIN_PASSWORD`,
+`ADMIN_SECRET`, serta `NEXT_PUBLIC_SITE_URL` di project settings. Terakhir:
+
+```bash
+vercel env pull .env.local          # supaya lokal memakai store yang sama
+vercel deploy                       # preview
+vercel deploy --prod
+```
+
+Halaman publik di-generate saat build. Suntingan di panel memanggil
+`revalidatePath`, jadi halaman terkait dibangun ulang saat permintaan berikutnya
+— tanpa deploy ulang.
+
+## Yang belum beres
+
 - Data isian awal masih fiktif — nama proyek, klien, dan angka harga belum nyata
-- Repositori masih di memori; data hilang tiap server restart
 - Audit aksesibilitas dan Lighthouse belum dijalankan
+- Penulisan tanpa penguncian: dua penyuntingan bersamaan, yang terakhir menang.
+  Panel ini dipakai satu operator, jadi batasnya belum terasa
+- Pencarian berupa pemindaian substring — cukup sampai sekitar 500 record
 
 ---
 

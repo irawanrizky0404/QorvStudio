@@ -1,18 +1,19 @@
-﻿import 'server-only';
+import 'server-only';
 
 import type { Inquiry, Product, Project, Service, Settings } from '@/types/content';
 import type { InquiryInput, ProductInput, ProjectInput, ServiceInput } from '@/types/inputs';
 import type { ListQuery, Paginated, Repository } from '../types';
 import { RepositoryError } from '../types';
 import {
-  getInquiryStore,
-  getSettingsStore,
   productsCollection,
   projectsCollection,
+  readInquiries,
+  readSettings,
   servicesCollection,
-  setSettingsStore,
+  writeInquiries,
+  writeSettings,
 } from './collections';
-import { makeId, nowIso, simulateNetwork } from './store';
+import { checkFailure, makeId, nowIso } from './store';
 import { deriveStartingPrice, sortPackagesByTier } from '@/lib/pricing';
 
 /* ── Derived values ───────────────────────────────────────────────────────── */
@@ -41,13 +42,12 @@ export const projectRepo: Repository<Project, ProjectInput> = {
   },
 
   async create(input: ProjectInput): Promise<Project> {
-    await simulateNetwork('projects:create');
     const timestamp = nowIso();
     const project: Project = {
       ...input,
-      serviceIds: validateServiceIds(input.serviceIds),
+      serviceIds: await validateServiceIds(input.serviceIds),
       id: makeId('proj'),
-      order: projectsCollection.nextOrder(),
+      order: await projectsCollection.nextOrder(),
       createdAt: timestamp,
       updatedAt: timestamp,
       publishedAt: publishStamp(input.status),
@@ -56,15 +56,14 @@ export const projectRepo: Repository<Project, ProjectInput> = {
   },
 
   async update(id: string, input: Partial<ProjectInput>): Promise<Project> {
-    await simulateNetwork('projects:update');
-    const existing = projectsCollection.getByIdSync(id);
+    const existing = await projectsCollection.getById(id);
     if (!existing) throw new RepositoryError(`No project with id "${id}"`, 'NOT_FOUND');
 
     const status = input.status ?? existing.status;
     const next: Project = {
       ...existing,
       ...input,
-      serviceIds: validateServiceIds(input.serviceIds ?? existing.serviceIds),
+      serviceIds: await validateServiceIds(input.serviceIds ?? existing.serviceIds),
       id: existing.id,
       order: existing.order,
       createdAt: existing.createdAt,
@@ -75,19 +74,18 @@ export const projectRepo: Repository<Project, ProjectInput> = {
   },
 
   async remove(id: string): Promise<void> {
-    await simulateNetwork('projects:delete');
-    projectsCollection.delete(id);
+    await projectsCollection.delete(id);
   },
 
   async reorder(ids: string[]): Promise<void> {
-    await simulateNetwork('projects:reorder');
-    projectsCollection.reorder(ids);
+    await projectsCollection.reorder(ids);
   },
 };
 
 /** Drops ids that no longer resolve, rather than rendering a dangling reference. */
-function validateServiceIds(ids: string[]): string[] {
-  const known = new Set(servicesCollection.raw().map((service) => service.id));
+async function validateServiceIds(ids: string[]): Promise<string[]> {
+  const services = await servicesCollection.read();
+  const known = new Set(services.map((service) => service.id));
   return ids.filter((id) => known.has(id));
 }
 
@@ -107,14 +105,13 @@ export const serviceRepo: Repository<Service, ServiceInput> = {
   },
 
   async create(input: ServiceInput): Promise<Service> {
-    await simulateNetwork('services:create');
     const timestamp = nowIso();
     const service: Service = {
       ...input,
       id: makeId('svc'),
       packages: sortPackagesByTier(input.packages),
       startingPrice: deriveStartingPrice(input.packages),
-      order: servicesCollection.nextOrder(),
+      order: await servicesCollection.nextOrder(),
       createdAt: timestamp,
       updatedAt: timestamp,
       publishedAt: publishStamp(input.status),
@@ -123,8 +120,7 @@ export const serviceRepo: Repository<Service, ServiceInput> = {
   },
 
   async update(id: string, input: Partial<ServiceInput>): Promise<Service> {
-    await simulateNetwork('services:update');
-    const existing = servicesCollection.getByIdSync(id);
+    const existing = await servicesCollection.getById(id);
     if (!existing) throw new RepositoryError(`No service with id "${id}"`, 'NOT_FOUND');
 
     const packages = sortPackagesByTier(input.packages ?? existing.packages);
@@ -145,50 +141,75 @@ export const serviceRepo: Repository<Service, ServiceInput> = {
 
   /**
    * Deleting a service must strip its id from every referencing project.
-   * KV has no foreign keys, so this cleanup is the repository's job - doing it
-   * at a call site is how dangling references get shipped.
+   * The store has no foreign keys, so this cleanup is the repository's job -
+   * doing it at a call site is how dangling references get shipped.
    * See DATABASE_SCHEMA.md §7 "Cross-entity writes".
    */
   async remove(id: string): Promise<void> {
-    await simulateNetwork('services:delete');
-    servicesCollection.delete(id);
-    for (const project of projectsCollection.raw()) {
-      if (project.serviceIds.includes(id)) {
-        project.serviceIds = project.serviceIds.filter((serviceId) => serviceId !== id);
-        project.updatedAt = nowIso();
-      }
+    await servicesCollection.delete(id);
+
+    const projects = await projectsCollection.read();
+    const touched = projects.some((project) => project.serviceIds.includes(id));
+    if (touched) {
+      const timestamp = nowIso();
+      await projectsCollection.writeAll(
+        projects.map((project) =>
+          project.serviceIds.includes(id)
+            ? {
+                ...project,
+                serviceIds: project.serviceIds.filter((serviceId) => serviceId !== id),
+                updatedAt: timestamp,
+              }
+            : project,
+        ),
+      );
     }
-    for (const service of servicesCollection.raw()) {
-      service.relatedServiceIds = service.relatedServiceIds.filter(
-        (relatedId) => relatedId !== id,
+
+    const services = await servicesCollection.read();
+    if (services.some((service) => service.relatedServiceIds.includes(id))) {
+      await servicesCollection.writeAll(
+        services.map((service) => ({
+          ...service,
+          relatedServiceIds: service.relatedServiceIds.filter((relatedId) => relatedId !== id),
+        })),
       );
     }
   },
 
   async reorder(ids: string[]): Promise<void> {
-    await simulateNetwork('services:reorder');
-    servicesCollection.reorder(ids);
+    await servicesCollection.reorder(ids);
   },
 };
 
-/** How many projects a service delete would unlink - shown in the confirm dialog. */
-export function countProjectsUsingService(serviceId: string): number {
-  return projectsCollection.raw().filter((project) => project.serviceIds.includes(serviceId))
-    .length;
+/**
+ * How many projects a service delete would unlink, per service id - shown in the
+ * confirm dialog.
+ *
+ * Returns the whole map rather than a count for one id. The caller renders a
+ * table of services, and asking per row would re-read the entire projects
+ * collection once per row.
+ */
+export async function countProjectsByService(): Promise<Record<string, number>> {
+  const projects = await projectsCollection.read();
+  const counts: Record<string, number> = {};
+  for (const project of projects) {
+    for (const serviceId of project.serviceIds) {
+      counts[serviceId] = (counts[serviceId] ?? 0) + 1;
+    }
+  }
+  return counts;
 }
 
 /** Reverse lookup: published projects delivered under a service. */
-export function getProjectsForService(serviceId: string): Project[] {
-  return projectsCollection
-    .raw()
-    .filter(
-      (project) => project.status === 'published' && project.serviceIds.includes(serviceId),
-    )
+export async function getProjectsForService(serviceId: string): Promise<Project[]> {
+  const projects = await projectsCollection.read();
+  return projects
+    .filter((project) => project.status === 'published' && project.serviceIds.includes(serviceId))
     .sort((a, b) => a.order - b.order);
 }
 
-export function getServicesByIds(ids: string[]): Service[] {
-  return servicesCollection.getManySync(ids);
+export async function getServicesByIds(ids: string[]): Promise<Service[]> {
+  return servicesCollection.getMany(ids);
 }
 
 /* ── Products ─────────────────────────────────────────────────────────────── */
@@ -207,12 +228,11 @@ export const productRepo: Repository<Product, ProductInput> = {
   },
 
   async create(input: ProductInput): Promise<Product> {
-    await simulateNetwork('products:create');
     const timestamp = nowIso();
     const product: Product = {
       ...input,
       id: makeId('prod'),
-      order: productsCollection.nextOrder(),
+      order: await productsCollection.nextOrder(),
       createdAt: timestamp,
       updatedAt: timestamp,
       publishedAt: publishStamp(input.status),
@@ -221,8 +241,7 @@ export const productRepo: Repository<Product, ProductInput> = {
   },
 
   async update(id: string, input: Partial<ProductInput>): Promise<Product> {
-    await simulateNetwork('products:update');
-    const existing = productsCollection.getByIdSync(id);
+    const existing = await productsCollection.getById(id);
     if (!existing) throw new RepositoryError(`No product with id "${id}"`, 'NOT_FOUND');
 
     const status = input.status ?? existing.status;
@@ -239,23 +258,26 @@ export const productRepo: Repository<Product, ProductInput> = {
   },
 
   async remove(id: string): Promise<void> {
-    await simulateNetwork('products:delete');
-    productsCollection.delete(id);
-    for (const product of productsCollection.raw()) {
-      product.relatedProductIds = product.relatedProductIds.filter(
-        (relatedId) => relatedId !== id,
+    await productsCollection.delete(id);
+
+    const products = await productsCollection.read();
+    if (products.some((product) => product.relatedProductIds.includes(id))) {
+      await productsCollection.writeAll(
+        products.map((product) => ({
+          ...product,
+          relatedProductIds: product.relatedProductIds.filter((relatedId) => relatedId !== id),
+        })),
       );
     }
   },
 
   async reorder(ids: string[]): Promise<void> {
-    await simulateNetwork('products:reorder');
-    productsCollection.reorder(ids);
+    await productsCollection.reorder(ids);
   },
 };
 
-export function getProductsByIds(ids: string[]): Product[] {
-  return productsCollection.getManySync(ids);
+export async function getProductsByIds(ids: string[]): Promise<Product[]> {
+  return productsCollection.getMany(ids);
 }
 
 /* ── Pricing (composed view - owns no data) ───────────────────────────────── */
@@ -266,10 +288,13 @@ export interface PricingView {
 }
 
 export async function getPricingView(): Promise<PricingView> {
-  await simulateNetwork('pricing');
+  const [services, products] = await Promise.all([
+    servicesCollection.read(),
+    productsCollection.read(),
+  ]);
   return {
-    services: servicesCollection.listSync({ perPage: 50, sort: 'manual' }).items,
-    products: productsCollection.listSync({ perPage: 50, sort: 'manual' }).items,
+    services: servicesCollection.filter(services, { perPage: 50, sort: 'manual' }).items,
+    products: productsCollection.filter(products, { perPage: 50, sort: 'manual' }).items,
   };
 }
 
@@ -277,9 +302,9 @@ export async function getPricingView(): Promise<PricingView> {
 
 export const inquiryRepo = {
   async list(query: ListQuery = {}): Promise<Paginated<Inquiry>> {
-    await simulateNetwork('inquiries');
+    checkFailure('inquiries');
     const { search, status, page = 1, perPage = 20 } = query;
-    let result = [...getInquiryStore()];
+    let result = [...(await readInquiries())];
 
     if (status && status !== 'all') {
       result = result.filter((item) => item.status === status);
@@ -309,12 +334,11 @@ export const inquiryRepo = {
   },
 
   async getById(id: string): Promise<Inquiry | null> {
-    await simulateNetwork(`inquiries:${id}`);
-    return getInquiryStore().find((item) => item.id === id) ?? null;
+    const items = await readInquiries();
+    return items.find((item) => item.id === id) ?? null;
   },
 
   async create(input: InquiryInput): Promise<Inquiry> {
-    await simulateNetwork('inquiries:create');
     const inquiry: Inquiry = {
       ...input,
       id: makeId('inq'),
@@ -328,39 +352,42 @@ export const inquiryRepo = {
         referrer: input.meta?.referrer ?? null,
       },
     };
-    getInquiryStore().unshift(inquiry);
+    const items = await readInquiries();
+    await writeInquiries([inquiry, ...items]);
     return inquiry;
   },
 
   async setStatus(id: string, status: Inquiry['status']): Promise<Inquiry> {
-    await simulateNetwork('inquiries:status');
-    const inquiry = getInquiryStore().find((item) => item.id === id);
-    if (!inquiry) throw new RepositoryError(`No inquiry with id "${id}"`, 'NOT_FOUND');
+    const items = await readInquiries();
+    const existing = items.find((item) => item.id === id);
+    if (!existing) throw new RepositoryError(`No inquiry with id "${id}"`, 'NOT_FOUND');
 
-    inquiry.status = status;
-    if (status === 'read' && !inquiry.readAt) inquiry.readAt = nowIso();
+    const next: Inquiry = { ...existing, status };
+    if (status === 'read' && !next.readAt) next.readAt = nowIso();
     if (status === 'replied') {
-      inquiry.readAt = inquiry.readAt ?? nowIso();
-      inquiry.repliedAt = nowIso();
+      next.readAt = next.readAt ?? nowIso();
+      next.repliedAt = nowIso();
     }
-    return inquiry;
+
+    await writeInquiries(items.map((item) => (item.id === id ? next : item)));
+    return next;
   },
 
   async remove(id: string): Promise<void> {
-    await simulateNetwork('inquiries:delete');
-    const store = getInquiryStore();
-    const index = store.findIndex((item) => item.id === id);
-    if (index === -1) throw new RepositoryError(`No inquiry with id "${id}"`, 'NOT_FOUND');
-    store.splice(index, 1);
+    const items = await readInquiries();
+    if (!items.some((item) => item.id === id)) {
+      throw new RepositoryError(`No inquiry with id "${id}"`, 'NOT_FOUND');
+    }
+    await writeInquiries(items.filter((item) => item.id !== id));
   },
 
   async countByStatus(): Promise<Record<Inquiry['status'], number>> {
-    const store = getInquiryStore();
+    const items = await readInquiries();
     return {
-      new: store.filter((item) => item.status === 'new').length,
-      read: store.filter((item) => item.status === 'read').length,
-      replied: store.filter((item) => item.status === 'replied').length,
-      archived: store.filter((item) => item.status === 'archived').length,
+      new: items.filter((item) => item.status === 'new').length,
+      read: items.filter((item) => item.status === 'read').length,
+      replied: items.filter((item) => item.status === 'replied').length,
+      archived: items.filter((item) => item.status === 'archived').length,
     };
   },
 };
@@ -369,12 +396,11 @@ export const inquiryRepo = {
 
 export const settingsRepo = {
   async get(): Promise<Settings> {
-    return getSettingsStore();
+    return readSettings();
   },
 
   async update(input: Partial<Settings>): Promise<Settings> {
-    await simulateNetwork('settings:update');
-    const next: Settings = { ...getSettingsStore(), ...input, updatedAt: nowIso() };
-    return setSettingsStore(next);
+    const current = await readSettings();
+    return writeSettings({ ...current, ...input, updatedAt: nowIso() });
   },
 };

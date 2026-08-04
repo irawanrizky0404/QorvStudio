@@ -64,7 +64,7 @@ export default async function ProjectDetailPage({
   const project = await projectRepo.getBySlug(slug);
   if (!project || project.status !== 'published') notFound();
 
-  const services = getServicesByIds(project.serviceIds);
+  const services = await getServicesByIds(project.serviceIds);
   const all = await projectRepo.list({ perPage: 50 });
   const index = all.items.findIndex((item) => item.id === project.id);
   const next = all.items[(index + 1) % all.items.length];

@@ -77,8 +77,8 @@ export default async function ServiceDetailPage({
 
   const name = pickLocale(service.name, locale);
   const deliverables = pickLocaleList(service.deliverables, locale);
-  const relatedProjects = getProjectsForService(service.id).slice(0, 2);
-  const relatedServices = getServicesByIds(service.relatedServiceIds).filter(
+  const relatedProjects = (await getProjectsForService(service.id)).slice(0, 2);
+  const relatedServices = (await getServicesByIds(service.relatedServiceIds)).filter(
     (item) => item.status === 'published',
   );
 

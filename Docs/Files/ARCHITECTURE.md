@@ -19,7 +19,7 @@
 | i18n | Hand-rolled typed dictionaries + `Intl.*` | 2 locales; a package is not worth the weight |
 | Smooth scroll | `lenis` 1.3.25 | ~3kb; drives the ScrollTrigger ticker |
 | Scroll animation | `gsap` 3.15 + ScrollTrigger | Pinning, scrub, parallax, staggered reveals |
-| **Data (Phase 2)** | **Vercel KV (Upstash Redis)** | Serverless, no connection pooling, matches the traffic shape |
+| **Data** | **Upstash Redis (Vercel Marketplace)** | Serverless, no connection pooling, matches the traffic shape |
 | Media (Phase 2) | Vercel Blob | KV cannot hold binaries |
 | Email (Phase 2) | Resend | Inquiry notification + auto-reply |
 | Auth (Phase 2) | `jose` JWT in an HTTP-only cookie | Single admin; no auth framework needed |
@@ -76,9 +76,9 @@ src/
 ├── lib/
 │   ├── repo/
 │   │   ├── types.ts              # Repository<T> contract — the seam
-│   │   ├── mock/                 # Phase 1: in-memory + latency
-│   │   ├── kv/                   # Phase 2: Vercel KV
-│   │   └── index.ts              # selects impl from NEXT_PUBLIC_DATA_SOURCE
+│   │   ├── driver.ts             # where data lives: Upstash Redis or memory
+│   │   ├── mock/                 # collections, entities, users over the driver
+│   │   └── index.ts              # the only module the app imports
 │   ├── i18n/
 │   │   ├── config.ts             # locales, defaultLocale
 │   │   ├── dictionaries/{en,id}.ts
@@ -130,10 +130,11 @@ export interface Repository<T, TInput> {
 }
 ```
 
-- Phase 1 `mock/` implements this over module-level arrays seeded from `lib/mock-data/`, with a 500–1500ms delay and a deterministic failure hook so error states are demonstrable.
-- Phase 2 `kv/` implements the same interface over Route Handlers → Vercel KV.
-- `lib/repo/index.ts` picks the implementation from `NEXT_PUBLIC_DATA_SOURCE=mock|kv`.
-- **Components import from `lib/repo`, never from `mock/` or `kv/`.** This is what makes Phase 2 a backend-only change.
+- `mock/` implements this over collections seeded from `lib/mock-data/`, plus a deterministic failure hook so error states are demonstrable.
+- `driver.ts` decides where those collections are stored: **Upstash Redis** when `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` are present, process memory otherwise. Running in production without them throws — a panel that looks like it saves but does not is worse than a boot error.
+- The driver is chosen on first use, not at module evaluation, so `next build` does not need credentials.
+- One collection is stored as one JSON value, not one key per record. The data is tens of records, and that shape keeps all existing filtering, sorting, and pagination working over a plain array.
+- **Components import from `lib/repo`, never from `mock/` or `driver.ts`.** This is what keeps a storage change a storage-only diff.
 
 ---
 
@@ -149,19 +150,20 @@ export interface Repository<T, TInput> {
 **Decision:** The brand guidelines win. `--radius: 0`, `--shadow: none`, Space Mono as the body font.
 **Consequences:** Every Radix/shadcn-derived primitive must be restyled from scratch; no component library default may ship as-is.
 
-### ADR-003 — Vercel KV instead of PostgreSQL + Prisma
+### ADR-003 — Redis instead of PostgreSQL + Prisma
 **Context:** Dataset is dozens-to-hundreds of projects and products, single-writer, read-heavy. Serverless deployment.
-**Decision:** Vercel KV (Upstash Redis) as the primary store, with explicit secondary indexes.
+**Decision:** Upstash Redis via the Vercel Marketplace as the primary store. One collection per key, stored as a single JSON value — no secondary indexes.
 **Consequences:**
-- No ad-hoc queries. Every access path must have a maintained index key (see `DATABASE_SCHEMA.md`).
-- Writes must update the entity, the slug pointer, and every affected index — wrapped in a Redis pipeline/transaction to avoid partial state.
-- Search is a substring scan over a cached index at this scale. **Ceiling: fine to ~500 items; beyond that this needs a real search index or Postgres.** The repository seam is the migration path.
-- Trade-off accepted knowingly: no joins, no transactions across entities, no `ORDER BY` on arbitrary fields.
+- Every read pulls the whole collection, so all filtering, sorting, and pagination stay plain array work. That is what let the storage swap stay inside `lib/repo` instead of rewriting every query as SQL.
+- Every write is read → modify → write the whole collection. **Ceiling: no locking, so two simultaneous edits mean last-write-wins.** The panel has one operator; beyond that this needs per-record keys with an index, or Postgres.
+- Search is a substring scan. **Ceiling: fine to ~500 items.** The repository seam is the migration path.
+- Trade-off accepted knowingly: no joins, no cross-entity transactions, no `ORDER BY` on arbitrary fields.
+- `@vercel/kv` was sunset as a first-party product; Upstash via Marketplace is the replacement, and the client is `@upstash/redis`.
 
 ### ADR-004 — Frontend-first with a mock repository
 **Context:** Design and UX are the risk; the backend is well understood.
-**Decision:** Ship the entire UI against an in-memory mock behind `Repository<T>`, then implement KV against the same interface.
-**Consequences:** UI can be validated before any infrastructure exists; mock data must be production-realistic; the interface must be designed for KV's constraints from day one, not retrofitted.
+**Decision:** Ship the entire UI against an in-memory store behind `Repository<T>`, then put real storage behind the same interface.
+**Consequences:** UI can be validated before any infrastructure exists; seed data must be production-realistic; the interface must be designed for the store's constraints from day one, not retrofitted. This paid off: adding Redis touched only `lib/repo` plus five call sites that had to start awaiting.
 
 ### ADR-005 — Hand-rolled i18n, two locales
 **Context:** `en` + `id` only; most public pages are Server Components.
@@ -250,12 +252,13 @@ URL is the source of truth for filter, category, sort, and page — shareable an
 
 | Var | Phase | Purpose |
 |-----|-------|---------|
-| `NEXT_PUBLIC_DATA_SOURCE` | 1 | `mock` \| `kv` |
 | `NEXT_PUBLIC_SITE_URL` | 1 | Canonical URL, OG tags, sitemap. Local dev runs on **port 3030** — keep this in step with the `dev`/`start` scripts |
-| `NEXT_PUBLIC_CONTACT_EMAIL` | 1 | Public mailto |
-| `NEXT_PUBLIC_WHATSAPP_NUMBER` | 1 | Chat CTA |
-| `KV_REST_API_URL` / `KV_REST_API_TOKEN` | 2 | Vercel KV (auto-injected by Vercel) |
-| `BLOB_READ_WRITE_TOKEN` | 2 | Vercel Blob uploads |
+| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | 2 | Seed the first `dev` user |
+| `ADMIN_SECRET` | 2 | Signs the session cookie |
+| `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | 5 | Repository storage. Required in production; auto-injected by the Vercel Marketplace integration |
+| `BLOB_READ_WRITE_TOKEN` | 5 | Vercel Blob uploads. Without it uploads fall back to `public/uploads/`, which only works on a writable disk |
+
+Contact details are no longer environment variables: studio name, email, WhatsApp, location, and founding year live in Settings and are edited in the panel.
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD_HASH` | 2 | Single admin credentials |
 | `AUTH_SECRET` | 2 | JWT signing key |
 | `RESEND_API_KEY` | 2 | Inquiry notification email |

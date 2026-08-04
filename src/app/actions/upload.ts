@@ -4,6 +4,8 @@ import { randomUUID } from 'node:crypto';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
+import { put } from '@vercel/blob';
+
 import { requireSession } from '@/lib/auth';
 
 export interface UploadResult {
@@ -38,13 +40,19 @@ const SIGNATURES: ReadonlyArray<{ ext: string; test: (b: Buffer) => boolean }> =
 ];
 
 /**
- * Unggah satu gambar dan kembalikan path publiknya.
+ * Unggah satu gambar dan kembalikan URL publiknya.
  *
- * Berkas ditulis ke `public/uploads/`, jadi Next menyajikannya langsung tanpa
- * route tambahan. Konsekuensinya: ini hanya bekerja di server dengan disk yang
- * bisa ditulis. Di Vercel filesystem-nya read-only, jadi sebelum deploy bagian
- * `writeFile` ini harus diganti Vercel Blob — sisa fungsinya (auth, batas
- * ukuran, deteksi signature, penamaan acak) tetap sama.
+ * Dua tujuan penyimpanan, dipilih dari environment — pola yang sama dengan
+ * lapisan repositori:
+ *
+ * - **Vercel Blob** kalau `BLOB_READ_WRITE_TOKEN` ada. Ini yang dipakai di
+ *   produksi, karena filesystem Vercel read-only kecuali `/tmp`, dan `/tmp`
+ *   tidak disajikan ke publik.
+ * - **`public/uploads/`** kalau tidak. Ini yang dipakai saat pengembangan lokal
+ *   supaya `npm run dev` jalan tanpa akun apa pun.
+ *
+ * Semua pemeriksaan — sesi, batas ukuran, deteksi tipe, penamaan acak —
+ * berlaku sama untuk keduanya.
  */
 export async function uploadImage(formData: FormData): Promise<UploadResult> {
   await requireSession();
@@ -64,6 +72,29 @@ export async function uploadImage(formData: FormData): Promise<UploadResult> {
   }
 
   const name = `${randomUUID()}.${match.ext}`;
+
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    /*
+     * `addRandomSuffix: false` karena namanya sudah UUID. Membiarkan Blob
+     * menambah suffix-nya sendiri hanya membuat URL lebih panjang tanpa
+     * menambah jaminan apa pun.
+     */
+    const blob = await put(`uploads/${name}`, bytes, {
+      access: 'public',
+      contentType: file.type || `image/${match.ext}`,
+      addRandomSuffix: false,
+    });
+    return { ok: true, url: blob.url };
+  }
+
+  if (process.env.NODE_ENV === 'production') {
+    return {
+      ok: false,
+      message:
+        'Penyimpanan berkas belum dikonfigurasi. Pasang integrasi Vercel Blob, lalu deploy ulang.',
+    };
+  }
+
   const dir = path.join(process.cwd(), 'public', 'uploads');
   await mkdir(dir, { recursive: true });
   await writeFile(path.join(dir, name), bytes);

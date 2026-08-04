@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { deleteService } from '@/app/actions/content';
 import { formatDateShort, formatPrice } from '@/lib/format';
 import { pickLocale } from '@/lib/i18n/pick-locale';
-import { countProjectsUsingService, serviceRepo } from '@/lib/repo';
+import { countProjectsByService, serviceRepo } from '@/lib/repo';
 import { adminRoutes } from '@/lib/routes';
 
 import { AdminHeader } from '@/components/admin/shell';
@@ -21,8 +21,10 @@ export default async function AdminServicesPage(): Promise<ReactNode> {
     includeDrafts: true,
   });
 
+  const linkedCounts = await countProjectsByService();
+
   const rows: EntityRow[] = items.map((service) => {
-    const linked = countProjectsUsingService(service.id);
+    const linked = linkedCounts[service.id] ?? 0;
     return {
       id: service.id,
       title: pickLocale(service.name, 'en'),
