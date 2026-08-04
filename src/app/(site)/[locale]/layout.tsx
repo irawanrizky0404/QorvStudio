@@ -14,6 +14,7 @@ import { Nav } from '@/components/layout/nav';
 import { Footer } from '@/components/layout/footer';
 import { Toaster } from '@/components/ui/toaster';
 import type { Locale } from '@/types/content';
+import { siteUrl } from '@/lib/site-url';
 
 const grotesk = Space_Grotesk({
   subsets: ['latin'],
@@ -29,7 +30,7 @@ const jakarta = Plus_Jakarta_Sans({
   display: 'swap',
 });
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3030';
+const SITE_URL = siteUrl();
 
 export function generateStaticParams(): Array<{ locale: string }> {
   return LOCALES.map((locale) => ({ locale }));

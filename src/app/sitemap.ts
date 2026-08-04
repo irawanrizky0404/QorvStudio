@@ -1,8 +1,9 @@
 import type { MetadataRoute } from 'next';
 import { LOCALES } from '@/lib/i18n/config';
 import { projectRepo, serviceRepo, productRepo } from '@/lib/repo';
+import { siteUrl } from '@/lib/site-url';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3030';
+const SITE_URL = siteUrl();
 
 /** Published content only. Drafts must never leak into the sitemap. */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
