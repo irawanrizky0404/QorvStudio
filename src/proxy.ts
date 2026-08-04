@@ -75,7 +75,13 @@ export const config = {
      * Everything except Next internals, static assets, and files with an
      * extension. Without the extension guard, /favicon.ico would be redirected
      * to /en/favicon.ico and 404.
+     *
+     * `icon`, `apple-icon`, dan `opengraph-image` harus disebut satu per satu:
+     * ketiganya rute metadata yang dihasilkan Next dan **tidak berekstensi**,
+     * jadi penjaga ekstensi di atas tidak menangkapnya. Tanpa ini, permintaan
+     * favicon dialihkan ke `/id/icon` lalu 404 — situsnya tampak baik-baik saja,
+     * hanya ikon tabnya yang tidak pernah muncul.
      */
-    '/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\..*).*)',
+    '/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|icon|apple-icon|opengraph-image|twitter-image|.*\\..*).*)',
   ],
 };
