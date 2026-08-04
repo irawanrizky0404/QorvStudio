@@ -59,6 +59,16 @@ export async function generateMetadata({
       title: t.meta.defaultTitle,
       description: t.meta.defaultDescription,
       locale: locale === 'id' ? 'id_ID' : 'en_US',
+      /*
+       * Gambarnya ditunjuk eksplisit, tidak dibiarkan diambil otomatis dari
+       * `app/opengraph-image.tsx`.
+       *
+       * Situs ini tidak punya `app/layout.tsx` — ada dua root layout, satu per
+       * route group. Berkas metadata di akar `app/` karena itu tidak terwarisi
+       * ke dalam grup, dan `og:image` tidak pernah ikut terpasang meski
+       * rutenya sendiri melayani gambarnya dengan benar.
+       */
+      images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: t.meta.siteName }],
     },
     twitter: { card: 'summary_large_image' },
   };
