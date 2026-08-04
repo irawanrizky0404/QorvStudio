@@ -1,5 +1,7 @@
 import 'server-only';
 
+import { createHash } from 'node:crypto';
+
 import { hashPassword, verifyPassword } from '@/lib/password';
 import type { SafeUser, User, UserRole } from '@/types/content';
 import { getDriver, storeKey } from '../driver';
@@ -49,41 +51,75 @@ function bootstrapPassword(): string {
 }
 
 /**
- * Hash-nya dihitung sekali per proses, bukan tiap pembacaan.
+ * Sidik jari nilai lingkungan yang membentuk pengguna bootstrap.
  *
- * scrypt sengaja lambat. Tanpa cache ini, setiap pembacaan daftar pengguna pada
- * instance yang belum tersemai akan membayar biaya itu lagi walaupun hasilnya
- * langsung dibuang karena kuncinya ternyata sudah ada.
+ * Murah — satu SHA-256 — jadi boleh dihitung di setiap pembacaan, tidak seperti
+ * scrypt. Tidak dipakai untuk otentikasi apa pun, hanya untuk menjawab satu
+ * pertanyaan: apakah `ADMIN_EMAIL` atau `ADMIN_PASSWORD` berubah sejak record
+ * ini dibangun?
  */
-let bootstrapSeed: Promise<User[]> | null = null;
-
-function seedUsers(): Promise<User[]> {
-  bootstrapSeed ??= (async () => {
-    const now = nowIso();
-    return [
-      {
-        id: BOOTSTRAP_ID,
-        email: bootstrapEmail().toLowerCase(),
-        name: 'Studio Owner',
-        role: 'dev',
-        passwordHash: await hashPassword(bootstrapPassword()),
-        active: true,
-        createdAt: now,
-        updatedAt: now,
-      },
-    ];
-  })();
-  return bootstrapSeed;
+function envFingerprint(email: string, password: string): string {
+  return createHash('sha256').update(`${email}\n${password}`).digest('hex');
 }
 
-/*
- * `loadOrSeed` menerima seed sinkron, sedangkan milik kita async. Menghitungnya
- * lebih dulu di sini menjaga antarmuka driver tetap sederhana, dan biayanya
- * hanya sekali per proses berkat cache di atas.
+function buildBootstrap(email: string, hash: string, fingerprint: string): User {
+  const now = nowIso();
+  return {
+    id: BOOTSTRAP_ID,
+    email,
+    name: 'Studio Owner',
+    role: 'dev',
+    passwordHash: hash,
+    active: true,
+    createdAt: now,
+    updatedAt: now,
+    envFingerprint: fingerprint,
+  };
+}
+
+/**
+ * Pengguna bootstrap **dimiliki oleh lingkungan**, bukan oleh panel.
+ *
+ * Versi sebelumnya hanya menyemainya sekali: kalau kuncinya sudah ada di
+ * penyimpanan, nilai `ADMIN_EMAIL` dan `ADMIN_PASSWORD` yang baru diabaikan
+ * selamanya. Itu jebakan yang mahal — mengganti password admin di dashboard
+ * terasa seperti berhasil, padahal tidak mengubah apa pun, dan satu-satunya
+ * cara memperbaikinya adalah menghapus kunci Redis secara manual.
+ *
+ * Sekarang record-nya dibangun ulang setiap kali sidik jari lingkungannya
+ * berubah. Konsekuensinya jelas dan disengaja: **email dan password akun ini
+ * tidak bisa diubah lewat panel** — kalau diubah, ia akan kembali ke nilai
+ * lingkungan pada permintaan berikutnya. Akun yang dikelola panel dibuat lewat
+ * Admin > Users.
+ *
+ * Kalau alamat itu sudah dipakai pengguna lain, rekonsiliasinya dilewati. Lebih
+ * baik satu akun tertinggal di nilai lama daripada dua record berbagi email dan
+ * `verify()` memilih salah satunya secara sembarang.
  */
 async function readUsers(): Promise<User[]> {
-  const seed = await seedUsers();
-  return getDriver().loadOrSeed<User[]>(USERS_KEY, () => structuredClone(seed));
+  const email = bootstrapEmail().trim().toLowerCase();
+  const fingerprint = envFingerprint(email, bootstrapPassword());
+
+  const stored = await getDriver().loadOrSeed<User[]>(USERS_KEY, () => []);
+
+  const current = stored.find((user) => user.id === BOOTSTRAP_ID);
+  if (current?.envFingerprint === fingerprint) return stored;
+
+  if (stored.some((user) => user.id !== BOOTSTRAP_ID && user.email === email)) {
+    return stored;
+  }
+
+  const rebuilt = buildBootstrap(email, await hashPassword(bootstrapPassword()), fingerprint);
+  const next = current
+    ? stored.map((user) =>
+        user.id === BOOTSTRAP_ID
+          ? { ...rebuilt, createdAt: current.createdAt, name: current.name }
+          : user,
+      )
+    : [rebuilt, ...stored];
+
+  await writeUsers(next);
+  return next;
 }
 
 async function writeUsers(users: User[]): Promise<void> {
@@ -91,7 +127,7 @@ async function writeUsers(users: User[]): Promise<void> {
 }
 
 function safe(user: User): SafeUser {
-  const { passwordHash: _hash, ...rest } = user;
+  const { passwordHash: _hash, envFingerprint: _fingerprint, ...rest } = user;
   return rest;
 }
 
@@ -154,6 +190,15 @@ export const userRepo = {
     const email = input.email.trim().toLowerCase();
     if (users.some((user) => user.email === email && user.id !== id)) {
       throw new Error('EMAIL_TAKEN');
+    }
+
+    /*
+     * Akun bootstrap dimiliki lingkungan. Menerima perubahan email atau password
+     * di sini akan membuatnya terbalik sendiri pada pembacaan berikutnya, dan
+     * kegagalan yang paling membingungkan adalah yang tampak berhasil.
+     */
+    if (id === BOOTSTRAP_ID && (email !== current.email || input.password)) {
+      throw new Error('ENV_MANAGED');
     }
 
     // Menurunkan peran `dev` terakhir akan mengunci semua orang keluar dari

@@ -26,6 +26,8 @@ const DENY: Record<string, string> = {
   NOT_FOUND: 'Pengguna tidak ditemukan.',
   LAST_DEV:
     'Ini satu-satunya pengguna dev yang aktif. Angkat pengguna lain jadi dev dulu sebelum mengubah yang ini.',
+  ENV_MANAGED:
+    'Email dan password akun ini diatur lewat variabel lingkungan (ADMIN_EMAIL dan ADMIN_PASSWORD), bukan dari panel. Ubah di sana, atau buat pengguna baru di sini.',
 };
 
 function explain(error: unknown): string {

@@ -38,10 +38,18 @@ export interface User {
    */
   passwordHash: string;
   active: boolean;
+  /**
+   * Hanya ada pada pengguna bootstrap: sidik jari `ADMIN_EMAIL` + `ADMIN_PASSWORD`
+   * yang dipakai saat record ini terakhir dibangun.
+   *
+   * Dipakai untuk mendeteksi variabel lingkungan yang berubah tanpa harus
+   * menjalankan scrypt di setiap pembacaan. Lihat `repo/mock/users.ts`.
+   */
+  envFingerprint?: string;
 }
 
 /** Pengguna tanpa hash password. Satu-satunya bentuk yang boleh keluar server. */
-export type SafeUser = Omit<User, 'passwordHash'>;
+export type SafeUser = Omit<User, 'passwordHash' | 'envFingerprint'>;
 
 export interface MediaRef {
   url: string;
