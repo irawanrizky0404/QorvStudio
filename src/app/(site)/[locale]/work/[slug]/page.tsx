@@ -95,6 +95,19 @@ export default async function ProjectDetailPage({
         <p className="mt-6 max-w-2xl text-[15px] leading-relaxed text-muted">
           {pickLocale(project.summary, locale)}
         </p>
+        {/* Naik ke hero saat seksi CTA di bawah dibuang: ini satu-satunya tempat
+          * `liveUrl` muncul, dan di sini pun letaknya lebih masuk akal — orang
+          * yang mau melihat hasil jadinya tidak perlu membaca dulu sampai habis. */}
+        {project.liveUrl ? (
+          <div className="mt-8">
+            <Button asChild variant="outline">
+              <a href={project.liveUrl} target="_blank" rel="noreferrer noopener">
+                {t.work.liveSite}
+                <ExternalLink className="size-4" aria-hidden />
+              </a>
+            </Button>
+          </div>
+        ) : null}
       </Container>
 
       <Container className="mt-14">
@@ -191,41 +204,29 @@ export default async function ProjectDetailPage({
         <Section bordered>
           <Container>
             <SectionIntro lead={t.work.gallery} align="left" />
-            <div className="mt-12 grid gap-8 md:grid-cols-2">
+            {/* Rasio seragam, bukan 4/5 tiap gambar ketiga. Rasio berselang-seling
+              * membuat tiap baris tingginya beda dan barisnya tidak pernah rata —
+              * yang terbaca sebagai grid rusak, bukan sebagai ritme.
+              *
+              * Sel bergaris 3px, sama seperti Karya di beranda: satu perlakuan
+              * untuk semua kisi gambar di situs ini. */}
+            <div className="mt-12 grid gap-[3px] border-3 border-ink bg-ink sm:grid-cols-2">
               {project.gallery.map((media, i) => (
-                <Media
-                  key={i}
-                  media={media}
-                  locale={locale}
-                  aspect={i % 3 === 0 ? 'aspect-[4/5]' : 'aspect-[4/3]'}
-                  sizes="(max-width: 768px) 100vw, 45vw"
-                  slotLabel={`${pickLocale(project.title, locale)} ${i + 1}`}
-                  rounded="rounded-none"
-                />
+                <div key={i} className="bg-paper">
+                  <Media
+                    media={media}
+                    locale={locale}
+                    aspect="aspect-[4/3]"
+                    sizes="(max-width: 640px) 100vw, 45vw"
+                    slotLabel={`${pickLocale(project.title, locale)} ${i + 1}`}
+                    rounded="rounded-none"
+                  />
+                </div>
               ))}
             </div>
           </Container>
         </Section>
       ) : null}
-
-      <Section bordered>
-        <Container className="flex flex-wrap items-center gap-3">
-          <Button asChild size="lg">
-            <Link href={routes.contact(locale)}>
-              {t.home.ctaButton}
-              <ArrowRight className="size-4" aria-hidden />
-            </Link>
-          </Button>
-          {project.liveUrl ? (
-            <Button asChild variant="outline" size="lg">
-              <a href={project.liveUrl} target="_blank" rel="noreferrer noopener">
-                {t.work.liveSite}
-                <ExternalLink className="size-4" aria-hidden />
-              </a>
-            </Button>
-          ) : null}
-        </Container>
-      </Section>
 
       {next && next.id !== project.id ? (
         <Section bordered>

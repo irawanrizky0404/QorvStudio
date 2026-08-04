@@ -52,26 +52,22 @@ export default async function AboutPage({
 
   const services = await serviceRepo.list({ perPage: 12 });
 
-
   return (
     <>
       <PageHead label={t.nav.about} title={t.about.title} body={t.about.subtitle} />
 
-      {/* Persona. Dua kolom teks, tanpa panel — ini bacaan, bukan objek. */}
-      <Reveal as="section" className="band pt-0">
-        <Container>
-          <div className="grid gap-10 border-t-3 border-ink pt-10 md:grid-cols-2">
-            <h2 className="display rank-3 max-w-[16ch]">
-              <Printed lines={[t.about.persona]} />
-            </h2>
-            <div className="rise grid gap-5">
-              <p className="text-[15.5px] leading-relaxed">{t.home.intro}</p>
-              <p className="text-[15.5px] leading-relaxed">
-                {t.home.statementLead} {t.home.statementAccent} {t.home.statementTail}
-              </p>
-            </div>
-          </div>
-        </Container>
+      {/* Keempat seksi memakai `Block` yang sama.
+        *
+        * Persona dulunya dua kolom bikinan sendiri — judul kiri, teks kanan —
+        * dengan garis atas sendiri. Bentuknya tidak muncul di halaman lain
+        * manapun, jadi ia membaca sebagai seksi dari situs yang berbeda, dan
+        * judulnya jatuh di ritme yang lain dari dua blok di bawahnya. */}
+      <Reveal as="div">
+        <Block label={t.about.persona} title={[t.about.persona]} body={t.home.intro}>
+          <p className="max-w-[68ch] text-[15.5px] leading-relaxed">
+            {t.home.statementLead} {t.home.statementAccent} {t.home.statementTail}
+          </p>
+        </Block>
       </Reveal>
 
       <Reveal as="div">

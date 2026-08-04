@@ -191,6 +191,8 @@ export const en = {
     version: 'Version',
     lastUpdated: 'Last updated',
     demo: 'Live demo',
+    demoVideo: 'Demo video',
+    gallery: 'Gallery',
     docs: 'Documentation',
     related: 'Related products',
     emptyBody: 'No products published yet.',

@@ -191,6 +191,8 @@ export const id: Dictionary = {
     version: 'Versi',
     lastUpdated: 'Terakhir diperbarui',
     demo: 'Demo langsung',
+    demoVideo: 'Video demo',
+    gallery: 'Galeri',
     docs: 'Dokumentasi',
     related: 'Produk terkait',
     emptyBody: 'Belum ada produk yang dipublikasikan.',

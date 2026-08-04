@@ -13,6 +13,7 @@ import { formatDate } from '@/lib/format';
 import type { Locale } from '@/types/content';
 
 import { Reveal } from '@/components/motion/reveal';
+import { Block } from '@/components/ui/system';
 import { Button } from '@/components/ui/button';
 import { Media } from '@/components/ui/media';
 import { Accordion } from '@/components/ui/accordion';
@@ -200,6 +201,55 @@ export default async function ProductDetailPage({
         </Section>
       ) : null}
 
+      {/* Video demo — satu bidang lebar, sebelum galeri. Melihat produknya
+        * bergerak menjawab lebih banyak daripada tangkapan layar diam, jadi
+        * kalau ada, ia yang duluan.
+        *
+        * `<video>` biasa, bukan embed. Sumbernya diisi operator lewat panel dan
+        * bisa mengarah ke mana saja; iframe pihak ketiga berarti menyerahkan satu
+        * kotak di halaman ini kepada domain lain. */}
+      {product.demoVideoUrl ? (
+        <Section bordered>
+          <Container>
+            <SectionIntro lead={t.products.demoVideo} align="left" />
+            <div className="mt-12 border-3 border-ink bg-ink">
+              <video
+                src={product.demoVideoUrl}
+                controls
+                playsInline
+                preload="metadata"
+                poster={product.cover.url}
+                className="aspect-video w-full"
+              />
+            </div>
+          </Container>
+        </Section>
+      ) : null}
+
+      {/* Galeri — kisi bergaris yang sama dengan Karya. Rasio seragam supaya
+        * tiap baris rata; rasio berselang-seling terbaca sebagai grid rusak. */}
+      {product.gallery.length > 0 ? (
+        <Section bordered>
+          <Container>
+            <SectionIntro lead={t.products.gallery} align="left" />
+            <div className="mt-12 grid gap-[3px] border-3 border-ink bg-ink sm:grid-cols-2">
+              {product.gallery.map((media, i) => (
+                <div key={i} className="bg-paper">
+                  <Media
+                    media={media}
+                    locale={locale}
+                    aspect="aspect-[4/3]"
+                    sizes="(max-width: 640px) 100vw, 45vw"
+                    slotLabel={`${name} ${i + 1}`}
+                    rounded="rounded-none"
+                  />
+                </div>
+              ))}
+            </div>
+          </Container>
+        </Section>
+      ) : null}
+
       <Section bordered>
         <Container>
           <SectionIntro lead={t.products.specs} />
@@ -250,21 +300,22 @@ export default async function ProductDetailPage({
         </Container>
       </Section>
 
+      {/* Bentuk yang sama dengan FAQ di halaman Harga: judul lewat `Block`, dan
+        * daftarnya selebar container. `max-w-4xl` rata tengah menyisakan pita
+        * kosong di kedua sisi, dan judulnya jadi tidak sebaris dengan seksi
+        * mana pun di atasnya. */}
       {product.faqs.length > 0 ? (
-        <Section bordered>
-          <Container>
-            <SectionIntro lead={t.products.faq} />
-            <div className="mx-auto mt-14 max-w-4xl">
-              <Accordion
-                items={product.faqs.map((faq) => ({
-                  id: faq.id,
-                  question: pickLocale(faq.question, locale),
-                  answer: pickLocale(faq.answer, locale),
-                }))}
-              />
-            </div>
-          </Container>
-        </Section>
+        <Reveal as="div">
+          <Block label={t.products.faq} title={[t.products.faq]} body={t.home.faqBody}>
+            <Accordion
+              items={product.faqs.map((faq) => ({
+                id: faq.id,
+                question: pickLocale(faq.question, locale),
+                answer: pickLocale(faq.answer, locale),
+              }))}
+            />
+          </Block>
+        </Reveal>
       ) : null}
 
       {product.changelog.length > 0 ? (

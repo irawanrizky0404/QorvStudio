@@ -12,6 +12,7 @@ import { routes } from '@/lib/routes';
 import type { Locale } from '@/types/content';
 
 import { Reveal } from '@/components/motion/reveal';
+import { Block } from '@/components/ui/system';
 import { Media } from '@/components/ui/media';
 import { Accordion } from '@/components/ui/accordion';
 import { Price, TierCard } from '@/components/pricing/price';
@@ -287,22 +288,20 @@ export default async function ServiceDetailPage({
         </Section>
       ) : null}
 
-      {/* FAQ */}
+      {/* FAQ — bentuknya disamakan dengan halaman Harga. Lihat catatan di
+        * products/[slug]. */}
       {service.faqs.length > 0 ? (
-        <Section bordered>
-          <Container>
-            <SectionIntro lead={t.services.faq} body={t.home.faqBody} />
-            <div className="mx-auto mt-14 max-w-4xl">
-              <Accordion
-                items={service.faqs.map((faq) => ({
-                  id: faq.id,
-                  question: pickLocale(faq.question, locale),
-                  answer: pickLocale(faq.answer, locale),
-                }))}
-              />
-            </div>
-          </Container>
-        </Section>
+        <Reveal as="div">
+          <Block label={t.services.faq} title={[t.services.faq]} body={t.home.faqBody}>
+            <Accordion
+              items={service.faqs.map((faq) => ({
+                id: faq.id,
+                question: pickLocale(faq.question, locale),
+                answer: pickLocale(faq.answer, locale),
+              }))}
+            />
+          </Block>
+        </Reveal>
       ) : null}
 
       {/* Related services */}
