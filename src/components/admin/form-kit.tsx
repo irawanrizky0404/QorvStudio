@@ -1,10 +1,13 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useRef, useState } from 'react';
+import type { ChangeEvent, ReactNode } from 'react';
 import { Controller, useFieldArray, useFormContext } from 'react-hook-form';
-import type { FieldValues, Path } from 'react-hook-form';
-import { GripVertical, Plus, X } from 'lucide-react';
+import type { FieldValues, Path, PathValue } from 'react-hook-form';
+import { GripVertical, Plus, Upload, X } from 'lucide-react';
 
+import { uploadImage } from '@/app/actions/upload';
+import { toast } from '@/stores/ui-store';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input, Select, Textarea } from '@/components/ui/field';
@@ -402,8 +405,49 @@ export function MediaField<T extends FieldValues>({
   label: string;
   hint?: string;
 }): ReactNode {
-  const { register, watch } = useFormContext<T>();
+  const { register, watch, setValue } = useFormContext<T>();
   const url = watch(`${name}.url` as Path<T>) as unknown as string | undefined;
+  const picker = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+
+  /**
+   * Dimensi dibaca di klien sebelum unggah.
+   *
+   * Server bisa saja mengurainya sendiri, tapi itu berarti menambah dependensi
+   * pembaca header gambar; browser sudah punya dekodernya. Kalau `createImageBitmap`
+   * gagal, unggahannya tetap jalan — operator tinggal mengisi lebar/tinggi manual.
+   */
+  async function onPick(event: ChangeEvent<HTMLInputElement>): Promise<void> {
+    const file = event.target.files?.[0];
+    event.target.value = ''; // supaya memilih berkas yang sama lagi tetap memicu change
+    if (!file) return;
+
+    setBusy(true);
+    const bitmap = await createImageBitmap(file).catch(() => null);
+    const body = new FormData();
+    body.set('file', file);
+    const result = await uploadImage(body);
+    setBusy(false);
+
+    if (!result.ok || result.url === undefined) {
+      toast.error('Gagal mengunggah', result.message ?? 'Coba lagi.');
+      return;
+    }
+
+    const set = (key: string, value: string | number): void => {
+      setValue(`${name}.${key}` as Path<T>, value as PathValue<T, Path<T>>, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    };
+    set('url', result.url);
+    if (bitmap) {
+      set('width', bitmap.width);
+      set('height', bitmap.height);
+      bitmap.close();
+    }
+    toast.success('Gambar diunggah');
+  }
 
   return (
     <fieldset>
@@ -423,11 +467,30 @@ export function MediaField<T extends FieldValues>({
               </span>
             )}
           </div>
+          <input
+            ref={picker}
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/avif,image/gif"
+            className="sr-only"
+            onChange={(event) => void onPick(event)}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            loading={busy}
+            className="mt-3 w-full"
+            onClick={() => picker.current?.click()}
+          >
+            <Upload className="size-4" aria-hidden strokeWidth={2} />
+            Unggah gambar
+          </Button>
         </div>
 
         <div className="flex flex-col gap-5 md:col-span-8">
           <Input
             label="Path or URL"
+            hint="Unggah berkas, atau tempel path/URL langsung."
             placeholder="/images/example.jpg"
             error={useError(`${name}.url`)}
             {...register(`${name}.url` as Path<T>)}

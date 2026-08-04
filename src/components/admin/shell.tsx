@@ -185,13 +185,21 @@ export function AdminHeader({
   title,
   body,
   action,
+  className,
 }: {
   title: string;
   body?: string;
   action?: ReactNode;
+  /** Dipakai halaman yang mengatur ruang vertikalnya sendiri, mis. dasbor satu layar. */
+  className?: string;
 }): ReactNode {
   return (
-    <div className="mb-10 flex flex-wrap items-end justify-between gap-6 border-b-3 border-ink pb-8">
+    <div
+      className={cn(
+        'mb-10 flex flex-wrap items-end justify-between gap-6 border-b-3 border-ink pb-8',
+        className,
+      )}
+    >
       <div>
         <h1 className="display text-3xl text-ink md:text-4xl">{title}</h1>
         {body ? <p className="mt-3 max-w-xl text-sm leading-relaxed text-ink-soft">{body}</p> : null}

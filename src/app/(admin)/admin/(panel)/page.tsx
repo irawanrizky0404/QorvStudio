@@ -37,9 +37,48 @@ export default async function DashboardPage(): Promise<ReactNode> {
     { label: 'New inquiries', value: counts.new, href: adminRoutes.inquiries },
   ];
 
+  const drafts = [
+    ...projects.items
+      .filter((item) => item.status === 'draft')
+      .map((item) => ({
+        id: item.id,
+        name: pickLocale(item.title, 'en'),
+        href: adminRoutes.projectEdit(item.id),
+        kind: 'Project',
+      })),
+    ...services.items
+      .filter((item) => item.status === 'draft')
+      .map((item) => ({
+        id: item.id,
+        name: pickLocale(item.name, 'en'),
+        href: adminRoutes.serviceEdit(item.id),
+        kind: 'Service',
+      })),
+    ...products.items
+      .filter((item) => item.status === 'draft')
+      .map((item) => ({
+        id: item.id,
+        name: pickLocale(item.name, 'en'),
+        href: adminRoutes.productEdit(item.id),
+        kind: 'Product',
+      })),
+  ];
+
+  /*
+   * Dasbor dibuat muat satu layar mulai lg — halaman ini dilihat sekilas untuk
+   * tahu keadaan, bukan dibaca dari atas ke bawah, dan menggulir untuk melihat
+   * draf membuatnya terasa seperti laporan.
+   *
+   * Tingginya `100dvh` dikurangi padding vertikal `<main>` (py-14 = 7rem pada
+   * md ke atas). Yang menggulir hanya isi kedua kartu, bukan halamannya; baris
+   * statistik dan baris dokumen tetap di tempatnya. Di bawah lg tidak ada
+   * batasan sama sekali: layar telepon terlalu pendek untuk memuat semuanya
+   * tanpa menyusutkan semua teks sampai tak terbaca.
+   */
   return (
-    <>
+    <div className="flex flex-col gap-6 lg:h-[calc(100dvh-7rem)]">
       <AdminHeader
+        className="mb-0 pb-5"
         title="Dashboard"
         body="What is published, what is still a draft, and who has written in."
         action={
@@ -49,16 +88,16 @@ export default async function DashboardPage(): Promise<ReactNode> {
         }
       />
 
-      <RuledGrid columns={4}>
+      <RuledGrid columns={4} className="shrink-0">
         {stats.map((stat) => (
-          <RuledCell key={stat.label} className="p-6 md:p-8">
+          <RuledCell key={stat.label} className="p-5 md:p-6">
             <Link
               href={stat.href}
               className="group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink"
             >
               <p className="text-[13px] text-ink-soft">{stat.label}</p>
-              <p className="display mt-3 text-4xl text-ink">{stat.value}</p>
-              <span className="mt-4 inline-flex items-center gap-2 text-[13px] text-ink-soft transition-colors group-hover:text-ink">
+              <p className="display mt-2 text-4xl text-ink">{stat.value}</p>
+              <span className="mt-3 inline-flex items-center gap-2 text-[13px] text-ink-soft transition-colors group-hover:text-ink">
                 Manage
                 <ArrowRight
                   aria-hidden
@@ -71,9 +110,9 @@ export default async function DashboardPage(): Promise<ReactNode> {
         ))}
       </RuledGrid>
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-12">
-        <Card className="lg:col-span-7">
-          <div className="flex items-center justify-between gap-4">
+      <div className="grid gap-8 lg:min-h-0 lg:flex-1 lg:grid-cols-12">
+        <Card padded={false} className="flex flex-col lg:col-span-7 lg:min-h-0">
+          <div className="flex shrink-0 items-center justify-between gap-4 border-b-3 border-ink p-6">
             <h2 className="display text-xl text-ink">Recent inquiries</h2>
             <Link
               href={adminRoutes.inquiries}
@@ -84,9 +123,9 @@ export default async function DashboardPage(): Promise<ReactNode> {
           </div>
 
           {inquiries.items.length === 0 ? (
-            <p className="mt-8 text-sm text-ink-soft">No inquiries yet.</p>
+            <p className="p-6 text-sm text-ink-soft">No inquiries yet.</p>
           ) : (
-            <ul className="mt-6 divide-y divide-line">
+            <ul className="divide-y divide-line overflow-y-auto px-6 lg:min-h-0 lg:flex-1">
               {inquiries.items.map((inquiry) => (
                 <li key={inquiry.id}>
                   <Link
@@ -112,41 +151,18 @@ export default async function DashboardPage(): Promise<ReactNode> {
           )}
         </Card>
 
-        <Card className="lg:col-span-5">
-          <h2 className="display text-xl text-ink">Drafts</h2>
-          <p className="mt-3 text-sm leading-relaxed text-ink-soft">
-            {draftCount === 0
-              ? 'Everything is published.'
-              : `${draftCount} ${draftCount === 1 ? 'record is' : 'records are'} still hidden from the public site.`}
-          </p>
+        <Card padded={false} className="flex flex-col lg:col-span-5 lg:min-h-0">
+          <div className="shrink-0 border-b-3 border-ink p-6">
+            <h2 className="display text-xl text-ink">Drafts</h2>
+            <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+              {draftCount === 0
+                ? 'Everything is published.'
+                : `${draftCount} ${draftCount === 1 ? 'record is' : 'records are'} still hidden from the public site.`}
+            </p>
+          </div>
 
-          <ul className="mt-6 flex flex-col gap-3">
-            {[
-              ...projects.items
-                .filter((item) => item.status === 'draft')
-                .map((item) => ({
-                  id: item.id,
-                  name: pickLocale(item.title, 'en'),
-                  href: adminRoutes.projectEdit(item.id),
-                  kind: 'Project',
-                })),
-              ...services.items
-                .filter((item) => item.status === 'draft')
-                .map((item) => ({
-                  id: item.id,
-                  name: pickLocale(item.name, 'en'),
-                  href: adminRoutes.serviceEdit(item.id),
-                  kind: 'Service',
-                })),
-              ...products.items
-                .filter((item) => item.status === 'draft')
-                .map((item) => ({
-                  id: item.id,
-                  name: pickLocale(item.name, 'en'),
-                  href: adminRoutes.productEdit(item.id),
-                  kind: 'Product',
-                })),
-            ].map((draft) => (
+          <ul className="flex flex-col gap-3 overflow-y-auto p-6 lg:min-h-0 lg:flex-1">
+            {drafts.map((draft) => (
               <li key={draft.id}>
                 <Link
                   href={draft.href}
@@ -178,7 +194,7 @@ export default async function DashboardPage(): Promise<ReactNode> {
         * Dibuka di tab baru, bukan menggantikan panel: operator biasanya membuka
         * ini sambil menyunting konten, bukan sebagai tujuan akhir.
         */}
-      <div className="mt-6 grid gap-[3px] border-3 border-ink bg-ink sm:grid-cols-2">
+      <div className="grid shrink-0 gap-[3px] border-3 border-ink bg-ink sm:grid-cols-2">
         {[
           {
             href: '/docs/web_design_system.html',
@@ -196,7 +212,7 @@ export default async function DashboardPage(): Promise<ReactNode> {
             href={doc.href}
             target="_blank"
             rel="noreferrer noopener"
-            className="group flex flex-col gap-3 bg-paper p-6 transition-colors duration-150 hover:bg-acid focus-visible:outline-3 focus-visible:-outline-offset-3 focus-visible:outline-ink"
+            className="group flex flex-col gap-2 bg-paper p-5 transition-colors duration-150 hover:bg-acid focus-visible:outline-3 focus-visible:-outline-offset-3 focus-visible:outline-ink"
           >
             <span className="label">Dokumen</span>
             <span className="display rank-4 flex items-center gap-3">
@@ -207,10 +223,10 @@ export default async function DashboardPage(): Promise<ReactNode> {
                 className="size-5 shrink-0 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
               />
             </span>
-            <span className="text-[14px] leading-relaxed">{doc.body}</span>
+            <span className="line-clamp-2 text-[13px] leading-relaxed">{doc.body}</span>
           </a>
         ))}
       </div>
-    </>
+    </div>
   );
 }

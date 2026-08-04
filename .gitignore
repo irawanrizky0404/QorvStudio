@@ -16,3 +16,10 @@ yarn-error.log*
 .vercel
 next-env.d.ts
 *.tsbuildinfo
+
+# Berkas yang diunggah lewat panel admin — konten, bukan kode.
+public/uploads/*
+!public/uploads/.gitkeep
+
+# Suite tes lokal.
+tests/
