@@ -17,6 +17,29 @@ export interface UploadResult {
 const MAX_BYTES = 8 * 1024 * 1024;
 
 /**
+ * Apakah Vercel Blob bisa dipakai pada proses ini.
+ *
+ * `@vercel/blob` v2 menerima dua cara masuk, dan integrasi Blob yang baru
+ * memasang yang **kedua**:
+ *
+ * 1. `BLOB_READ_WRITE_TOKEN` — token panjang umur, dipasang manual.
+ * 2. `VERCEL_OIDC_TOKEN` + `BLOB_STORE_ID` — token berumur pendek yang
+ *    disuntikkan Vercel saat runtime. Ini yang didapat kalau store di-connect
+ *    lewat dashboard.
+ *
+ * Keduanya diperiksa. Memeriksa `BLOB_READ_WRITE_TOKEN` saja membuat unggahan
+ * jatuh ke cabang filesystem padahal store-nya jelas tersambung.
+ *
+ * `BLOB_STORE_ID` sengaja tidak diterima sendirian: `vercel env pull` menariknya
+ * ke `.env.local`, sedangkan `VERCEL_OIDC_TOKEN` berumur pendek dan tidak ikut.
+ * Tanpa syarat kedua itu, unggahan lokal akan mencoba OIDC lalu gagal.
+ */
+function blobConfigured(): boolean {
+  if (process.env.BLOB_READ_WRITE_TOKEN) return true;
+  return Boolean(process.env.BLOB_STORE_ID && process.env.VERCEL_OIDC_TOKEN);
+}
+
+/**
  * Tipe ditentukan dari **byte pertama berkas**, bukan dari `file.type`.
  *
  * `file.type` dan nama berkas datang dari klien dan bisa dikarang: `evil.html`
@@ -45,9 +68,9 @@ const SIGNATURES: ReadonlyArray<{ ext: string; test: (b: Buffer) => boolean }> =
  * Dua tujuan penyimpanan, dipilih dari environment — pola yang sama dengan
  * lapisan repositori:
  *
- * - **Vercel Blob** kalau `BLOB_READ_WRITE_TOKEN` ada. Ini yang dipakai di
- *   produksi, karena filesystem Vercel read-only kecuali `/tmp`, dan `/tmp`
- *   tidak disajikan ke publik.
+ * - **Vercel Blob** kalau kredensialnya ada — lihat `blobConfigured`. Ini yang
+ *   dipakai di produksi, karena filesystem Vercel read-only kecuali `/tmp`, dan
+ *   `/tmp` tidak disajikan ke publik.
  * - **`public/uploads/`** kalau tidak. Ini yang dipakai saat pengembangan lokal
  *   supaya `npm run dev` jalan tanpa akun apa pun.
  *
@@ -73,7 +96,7 @@ export async function uploadImage(formData: FormData): Promise<UploadResult> {
 
   const name = `${randomUUID()}.${match.ext}`;
 
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
+  if (blobConfigured()) {
     /*
      * `addRandomSuffix: false` karena namanya sudah UUID. Membiarkan Blob
      * menambah suffix-nya sendiri hanya membuat URL lebih panjang tanpa

@@ -87,11 +87,26 @@ function redisDriver(redis: Redis): StorageDriver {
 
 /* ── Pemilihan ────────────────────────────────────────────────────────────── */
 
-function pick(): StorageDriver {
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+/**
+ * Dua penamaan untuk kredensial yang sama.
+ *
+ * Integrasi Upstash di Vercel Marketplace masih menyuntikkan nama warisan
+ * `KV_REST_API_*` dari masa Vercel KV, sedangkan `Redis.fromEnv()` dan dokumentasi
+ * Upstash memakai `UPSTASH_REDIS_REST_*`. Menerima keduanya lebih murah daripada
+ * menyuruh operator menduplikasi variabel dengan nama lain, dan menghindari satu
+ * kelas kegagalan yang membingungkan: kredensial jelas-jelas terpasang, tapi
+ * aplikasi bersikeras tidak menemukannya.
+ */
+function credentials(): { url: string; token: string } | null {
+  const url = process.env.UPSTASH_REDIS_REST_URL ?? process.env.KV_REST_API_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TOKEN;
+  return url && token ? { url, token } : null;
+}
 
-  if (url && token) return redisDriver(new Redis({ url, token }));
+function pick(): StorageDriver {
+  const found = credentials();
+
+  if (found) return redisDriver(new Redis(found));
 
   /*
    * Gagal keras saat dijalankan di produksi, bukan diam-diam menyajikan memori.
@@ -110,7 +125,8 @@ function pick(): StorageDriver {
   const building = process.env.NEXT_PHASE === 'phase-production-build';
   if (process.env.NODE_ENV === 'production' && !building) {
     throw new Error(
-      'UPSTASH_REDIS_REST_URL dan UPSTASH_REDIS_REST_TOKEN wajib ada di produksi. ' +
+      'Kredensial Redis wajib ada di produksi: UPSTASH_REDIS_REST_URL + ' +
+        'UPSTASH_REDIS_REST_TOKEN, atau KV_REST_API_URL + KV_REST_API_TOKEN. ' +
         'Pasang integrasi Upstash lewat Vercel Marketplace, lalu deploy ulang.',
     );
   }
