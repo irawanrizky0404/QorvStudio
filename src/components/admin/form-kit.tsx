@@ -201,7 +201,7 @@ export function LocalizedField<T extends FieldValues>({
       <legend className="text-[13px] text-ink-soft">
         {label}
         {required ? (
-          <span className="ml-1 text-acid" aria-hidden>
+          <span className="ml-1 text-ink" aria-hidden>
             *
           </span>
         ) : null}
@@ -276,7 +276,7 @@ export function TokenField<T extends FieldValues>({
                     onClick={() =>
                       field.onChange(values.filter((_, position) => position !== index))
                     }
-                    className="text-ink-soft transition-colors hover:text-danger focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-acid"
+                    className="text-ink-soft transition-colors hover:text-danger focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
                   >
                     <X className="size-3" aria-hidden />
                   </button>
@@ -374,7 +374,7 @@ export function Repeater({
                   type="button"
                   onClick={() => remove(index)}
                   aria-label={`Remove item ${index + 1}`}
-                  className="flex size-9 items-center justify-center text-ink-soft transition-colors hover:bg-danger/10 hover:text-danger focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-acid"
+                  className="flex size-9 items-center justify-center text-ink-soft transition-colors hover:bg-danger/10 hover:text-danger focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
                 >
                   <X className="size-4" aria-hidden />
                 </button>
@@ -505,7 +505,7 @@ export function ReferenceField<T extends FieldValues>({
                       )
                     }
                     className={cn(
-                      'min-h-11 px-5 text-[13px] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-acid',
+                      'min-h-11 px-5 text-[13px] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink',
                       active
                         ? 'bg-acid text-ink'
                         : 'bg-paper text-ink-soft border-3 border-ink hover:text-ink',

@@ -19,7 +19,7 @@ export default async function LoginPage({
     <div className="ambient flex min-h-dvh items-center justify-center px-6 py-16">
       <div className="w-full max-w-md">
         <p className="wordmark display text-center text-3xl text-ink">
-          QORV<span className="text-acid">.</span>
+          QORV<span className="text-ink">.</span>
         </p>
         <p className="mt-3 text-center text-sm text-ink-soft">Studio admin</p>
         <LoginForm from={from ?? '/admin'} />

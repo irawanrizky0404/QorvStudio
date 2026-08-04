@@ -57,7 +57,7 @@ export default async function InquiryDetailPage({
     <>
       <Link
         href={adminRoutes.inquiries}
-        className="mb-8 inline-flex items-center gap-2 text-[13px] text-ink-soft transition-colors hover:text-acid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-acid"
+        className="mb-8 inline-flex items-center gap-2 text-[13px] text-ink-soft transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
       >
         <ArrowLeft className="size-3.5" aria-hidden strokeWidth={1.75} />
         All inquiries

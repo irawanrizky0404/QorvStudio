@@ -273,8 +273,11 @@
       </div>
     </div>
     <p class="lede">
-      Fokus ditandai dengan <b>mengganti warna garis jadi acid</b>, bukan menambah
-      cincin di luar kotak — garis 3px sudah cukup tebal membawa keadaan fokus sendiri.
+      Fokus ditandai dengan <b>garis tinta 3px</b>, bukan acid. Acid di atas kertas
+      hanya 1,2:1 — cincin fokus acid praktis tak terlihat, persis masalah yang sama
+      dengan teks acid di atas kertas. Aturannya satu: <b>acid tidak pernah jadi
+      foreground</b>, tidak sebagai teks, ikon, maupun garis fokus. Kalau butuh sorotan
+      hover pada judul, pakai <code>underline</code> tinta, bukan pergantian warna.
       Pilihan berkotak memakai grid berkolom tetap, bukan <code>flex-wrap</code> dengan
       <code>flex-1</code>: kombinasi itu membuat sel baris terakhir melar dan kolomnya
       tidak pernah berbaris.

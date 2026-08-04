@@ -159,7 +159,7 @@ export default async function ServiceDetailPage({
               <ul className="mt-6 space-y-4">
                 {deliverables.map((item, i) => (
                   <li key={i} className="flex gap-3 text-sm leading-relaxed text-ink">
-                    <Check className="mt-0.5 size-4 shrink-0 text-acid" aria-hidden strokeWidth={1.75} />
+                    <Check className="mt-0.5 size-4 shrink-0 text-ink" aria-hidden strokeWidth={1.75} />
                     <span>{item}</span>
                   </li>
                 ))}
@@ -178,7 +178,7 @@ export default async function ServiceDetailPage({
               <RuledGrid columns={service.process.length >= 4 ? 4 : 3}>
                 {service.process.map((step) => (
                   <RuledCell key={step.id}>
-                    <span className="display text-4xl text-acid">
+                    <span className="display text-4xl text-ink">
                       {String(step.step).padStart(2, '0')}
                     </span>
                     <h3 className="display mt-6 text-lg text-ink">
@@ -264,7 +264,7 @@ export default async function ServiceDetailPage({
                 <Link
                   key={project.id}
                   href={routes.project(locale, project.slug)}
-                  className="group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-acid"
+                  className="group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink"
                 >
                   <Media
                     media={project.cover}
@@ -274,7 +274,7 @@ export default async function ServiceDetailPage({
                     slotLabel={pickLocale(project.title, locale)}
                     rounded="rounded-none"
                   />
-                  <h3 className="display mt-6 text-2xl text-ink transition-colors group-hover:text-acid">
+                  <h3 className="display mt-6 text-2xl text-ink transition-colors decoration-[3px] underline-offset-4 group-hover:underline">
                     {pickLocale(project.title, locale)}
                   </h3>
                   <p className="mt-2 text-[13px] text-faint">
@@ -315,11 +315,11 @@ export default async function ServiceDetailPage({
                 <li key={item.id}>
                   <Link
                     href={routes.service(locale, item.slug)}
-                    className="group focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-acid"
+                    className="group focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink"
                   >
                     <Card interactive className="flex items-center justify-between gap-6">
                       <div>
-                        <h3 className="display text-xl text-ink transition-colors group-hover:text-acid">
+                        <h3 className="display text-xl text-ink transition-colors decoration-[3px] underline-offset-4 group-hover:underline">
                           {pickLocale(item.name, locale)}
                         </h3>
                         <p className="mt-2 text-sm text-muted">

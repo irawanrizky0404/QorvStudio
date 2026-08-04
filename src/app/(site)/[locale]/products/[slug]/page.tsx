@@ -301,10 +301,10 @@ export default async function ProductDetailPage({
                 <Link
                   key={item.id}
                   href={routes.product(locale, item.slug)}
-                  className="group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-acid"
+                  className="group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink"
                 >
                   <Card interactive>
-                    <h3 className="display text-xl text-ink transition-colors group-hover:text-acid">
+                    <h3 className="display text-xl text-ink transition-colors decoration-[3px] underline-offset-4 group-hover:underline">
                       {pickLocale(item.name, locale)}
                     </h3>
                     <p className="mt-3 text-sm leading-relaxed text-muted">

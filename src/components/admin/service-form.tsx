@@ -110,7 +110,7 @@ function StartingPricePreview(): ReactNode {
   return (
     <p className="bg-paper px-5 py-4 text-[13px] text-ink-soft border-3 border-ink">
       Starting price shown on the site:{' '}
-      <span className="text-acid">
+      <span className="text-ink">
         {formatPrice(derived, currency, 'en', 'On request')}
       </span>{' '}
       <span className="text-ink-soft">- derived from the lowest package, never entered by hand.</span>

@@ -122,7 +122,7 @@ export function EntityTable({
                   </Link>
                   {row.featured ? (
                     <Star
-                      className="size-3.5 shrink-0 text-acid"
+                      className="size-3.5 shrink-0 text-ink"
                       aria-label="Featured"
                       strokeWidth={2}
                     />
@@ -146,7 +146,7 @@ export function EntityTable({
                   aria-label={`Edit ${row.title}`}
                   className={cn(
                     'flex size-10 items-center justify-center text-ink-soft transition-colors',
-                    'hover:bg-paper-dim hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-acid',
+                    'hover:bg-paper-dim hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink',
                   )}
                 >
                   <Pencil className="size-4" aria-hidden strokeWidth={1.75} />
@@ -155,7 +155,7 @@ export function EntityTable({
                   type="button"
                   onClick={() => setTarget(row)}
                   aria-label={`Delete ${row.title}`}
-                  className="flex size-10 items-center justify-center text-ink-soft transition-colors hover:bg-danger/10 hover:text-danger focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-acid"
+                  className="flex size-10 items-center justify-center text-ink-soft transition-colors hover:bg-danger/10 hover:text-danger focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
                 >
                   <Trash2 className="size-4" aria-hidden strokeWidth={1.75} />
                 </button>

@@ -170,7 +170,7 @@ export function AdminShell({
             <Menu className="size-5" aria-hidden strokeWidth={1.75} />
           </button>
           <span className="wordmark display text-lg text-ink">
-            QORV<span className="text-acid">.</span>
+            QORV<span className="text-ink">.</span>
           </span>
         </header>
 

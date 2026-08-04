@@ -85,7 +85,7 @@ export function InquiryActions({
                   onClick={() => void change(option.value)}
                   className={cn(
                     'min-h-11 px-5 text-[13px] transition-colors disabled:opacity-50',
-                    'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-acid',
+                    'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink',
                     active
                       ? 'bg-acid text-ink'
                       : 'bg-paper text-ink-soft border-3 border-ink hover:text-ink',

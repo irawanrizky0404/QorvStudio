@@ -65,7 +65,7 @@ export default async function InquiriesPage({
               aria-current={isActive ? 'page' : undefined}
               className={cn(
                 'inline-flex min-h-11 items-center gap-2 px-5 text-[13px] transition-colors',
-                'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-acid',
+                'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink',
                 isActive
                   ? 'bg-acid text-ink'
                   : 'bg-paper text-ink-soft border-3 border-ink hover:text-ink',
@@ -95,12 +95,12 @@ export default async function InquiriesPage({
             <li key={inquiry.id}>
               <Link
                 href={adminRoutes.inquiry(inquiry.id)}
-                className="group flex flex-wrap items-center gap-x-5 gap-y-3 py-5 transition-colors hover:bg-paper/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-acid"
+                className="group flex flex-wrap items-center gap-x-5 gap-y-3 py-5 transition-colors hover:bg-paper/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
               >
                 <div className="min-w-0 flex-1 basis-64">
                   <p
                     className={cn(
-                      'truncate text-sm transition-colors group-hover:text-acid',
+                      'truncate text-sm transition-colors decoration-[3px] underline-offset-4 group-hover:underline',
                       inquiry.status === 'new' ? 'text-ink' : 'text-ink-soft',
                     )}
                   >

@@ -127,7 +127,7 @@ export default async function ProjectDetailPage({
           <div className="flex flex-col gap-10 lg:col-span-7">
             {chapters.map((chapter) => (
               <Reveal key={chapter.title} variant="up">
-                <h2 className="display text-2xl text-acid">{chapter.title}</h2>
+                <h2 className="display text-2xl text-ink">{chapter.title}</h2>
                 <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-muted">
                   {chapter.body}
                 </p>
@@ -143,7 +143,7 @@ export default async function ProjectDetailPage({
                   {project.results.map((result, i) => (
                     <div key={i} className="flex items-baseline justify-between gap-4 border-b-3 border-ink pb-4 last:border-0 last:pb-0">
                       <dt className="text-sm text-muted">{pickLocale(result.label, locale)}</dt>
-                      <dd className="display text-2xl text-acid">{result.value}</dd>
+                      <dd className="display text-2xl text-ink">{result.value}</dd>
                     </div>
                   ))}
                 </dl>
@@ -168,7 +168,7 @@ export default async function ProjectDetailPage({
                       <li key={service.id}>
                         <Link
                           href={routes.service(locale, service.slug)}
-                          className="group flex items-center justify-between gap-4 text-sm text-ink transition-colors hover:text-acid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-acid"
+                          className="group flex items-center justify-between gap-4 text-sm text-ink transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
                         >
                           {pickLocale(service.name, locale)}
                           <ArrowRight
@@ -233,9 +233,9 @@ export default async function ProjectDetailPage({
             <p className="text-[13px] text-faint">{t.work.nextProject}</p>
             <Link
               href={routes.project(locale, next.slug)}
-              className="group mt-5 flex flex-wrap items-center justify-between gap-6 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-acid"
+              className="group mt-5 flex flex-wrap items-center justify-between gap-6 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink"
             >
-              <h2 className="display text-[clamp(1.75rem,4vw,3.25rem)] text-ink transition-colors group-hover:text-acid">
+              <h2 className="display text-[clamp(1.75rem,4vw,3.25rem)] text-ink transition-colors decoration-[3px] underline-offset-4 group-hover:underline">
                 {pickLocale(next.title, locale)}
               </h2>
               <span

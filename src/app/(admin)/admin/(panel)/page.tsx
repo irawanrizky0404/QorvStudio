@@ -54,10 +54,10 @@ export default async function DashboardPage(): Promise<ReactNode> {
           <RuledCell key={stat.label} className="p-6 md:p-8">
             <Link
               href={stat.href}
-              className="group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-acid"
+              className="group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink"
             >
               <p className="text-[13px] text-ink-soft">{stat.label}</p>
-              <p className="display mt-3 text-4xl text-acid">{stat.value}</p>
+              <p className="display mt-3 text-4xl text-ink">{stat.value}</p>
               <span className="mt-4 inline-flex items-center gap-2 text-[13px] text-ink-soft transition-colors group-hover:text-ink">
                 Manage
                 <ArrowRight
@@ -77,7 +77,7 @@ export default async function DashboardPage(): Promise<ReactNode> {
             <h2 className="display text-xl text-ink">Recent inquiries</h2>
             <Link
               href={adminRoutes.inquiries}
-              className="text-[13px] text-ink-soft transition-colors hover:text-acid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-acid"
+              className="text-[13px] text-ink-soft transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
             >
               View all
             </Link>
@@ -91,10 +91,10 @@ export default async function DashboardPage(): Promise<ReactNode> {
                 <li key={inquiry.id}>
                   <Link
                     href={adminRoutes.inquiry(inquiry.id)}
-                    className="group flex items-center gap-4 py-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-acid"
+                    className="group flex items-center gap-4 py-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm text-ink transition-colors group-hover:text-acid">
+                      <p className="truncate text-sm text-ink transition-colors decoration-[3px] underline-offset-4 group-hover:underline">
                         {inquiry.subject}
                       </p>
                       <p className="mt-1 truncate text-[13px] text-ink-soft">
@@ -150,10 +150,10 @@ export default async function DashboardPage(): Promise<ReactNode> {
               <li key={draft.id}>
                 <Link
                   href={draft.href}
-                  className="group flex items-center justify-between gap-4 bg-paper px-5 py-4 border-3 border-ink transition-colors hover:border-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-acid"
+                  className="group flex items-center justify-between gap-4 bg-paper px-5 py-4 border-3 border-ink transition-colors hover:border-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
                 >
                   <span className="min-w-0">
-                    <span className="block truncate text-sm text-ink transition-colors group-hover:text-acid">
+                    <span className="block truncate text-sm text-ink transition-colors decoration-[3px] underline-offset-4 group-hover:underline">
                       {draft.name}
                     </span>
                     <span className="mt-1 block text-[13px] text-ink-soft">{draft.kind}</span>
