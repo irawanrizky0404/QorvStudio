@@ -1,0 +1,122 @@
+{
+  "hero": {
+    "path": "/images/hero.jpg",
+    "alt": "architectural photography of concrete monument",
+    "query": "brutalist concrete architecture",
+    "source": "Unsplash"
+  },
+  "proj-meridian": {
+    "path": "/images/proj-meridian.jpg",
+    "alt": "Empty industrial warehouse with polished concrete floor",
+    "query": "logistics warehouse night",
+    "source": "Unsplash"
+  },
+  "proj-nocturne": {
+    "path": "/images/proj-nocturne.jpg",
+    "alt": "a coffee bag and a cup of coffee on a pink background",
+    "query": "coffee packaging design",
+    "source": "Unsplash"
+  },
+  "proj-vantage": {
+    "path": "/images/proj-vantage.jpg",
+    "alt": "black and gray corded headphones",
+    "query": "headphones studio product",
+    "source": "Unsplash"
+  },
+  "proj-halden": {
+    "path": "/images/proj-halden.jpg",
+    "alt": "a white building with a curved roof",
+    "query": "architecture model studio",
+    "source": "Unsplash"
+  },
+  "proj-tessera": {
+    "path": "/images/proj-tessera.jpg",
+    "alt": "a person sitting at a table with a tablet",
+    "query": "surveyor field tablet",
+    "source": "Unsplash"
+  },
+  "proj-kiln": {
+    "path": "/images/proj-kiln.jpg",
+    "alt": "person making clay pot on white round plate",
+    "query": "ceramic pottery studio",
+    "source": "Unsplash"
+  },
+  "proj-orbit": {
+    "path": "/images/proj-orbit.jpg",
+    "alt": "a red car on a red carpet in front of a store",
+    "query": "car design clay model",
+    "source": "Unsplash"
+  },
+  "proj-atlas": {
+    "path": "/images/proj-atlas.jpg",
+    "alt": "black samsung flat screen computer monitor",
+    "query": "data screen dark",
+    "source": "Unsplash"
+  },
+  "svc-web": {
+    "path": "/images/svc-web.jpg",
+    "alt": "text",
+    "query": "code screen dark",
+    "source": "Unsplash"
+  },
+  "svc-3d": {
+    "path": "/images/svc-3d.jpg",
+    "alt": "a close up of a metal object with a brown background",
+    "query": "abstract render geometry",
+    "source": "Unsplash"
+  },
+  "svc-packaging": {
+    "path": "/images/svc-packaging.jpg",
+    "alt": "a white box with a black box on top of it",
+    "query": "packaging box mockup",
+    "source": "Unsplash"
+  },
+  "svc-brand": {
+    "path": "/images/svc-brand.jpg",
+    "alt": "Storefront advertising printing and engraving services",
+    "query": "brand identity print",
+    "source": "Unsplash"
+  },
+  "svc-uiux": {
+    "path": "/images/svc-uiux.jpg",
+    "alt": "person writing on white paper",
+    "query": "wireframe sketch design",
+    "source": "Unsplash"
+  },
+  "svc-consult": {
+    "path": "/images/svc-consult.jpg",
+    "alt": "black and red usb flash drive beside silver and black click pen",
+    "query": "blueprint technical drawing",
+    "source": "Unsplash"
+  },
+  "prod-forge": {
+    "path": "/images/prod-forge.jpg",
+    "alt": "a circle of different colors on a table",
+    "query": "colour swatches design",
+    "source": "Unsplash"
+  },
+  "prod-strata": {
+    "path": "/images/prod-strata.jpg",
+    "alt": "a rack of electronic equipment in a dark room",
+    "query": "server room dark",
+    "source": "Unsplash"
+  },
+  "prod-relay": {
+    "path": "/images/prod-relay.jpg",
+    "alt": "a bunch of blue wires connected to each other",
+    "query": "network cables",
+    "source": "Unsplash"
+  },
+  "prod-quarry": {
+    "path": "/images/prod-quarry.jpg",
+    "alt": "a book shelf filled with lots of books",
+    "query": "archive documents shelves",
+    "source": "Unsplash"
+  },
+  "prod-ledger": {
+    "path": "/images/prod-ledger.jpg",
+    "alt": "a person sitting at a table with a laptop",
+    "query": "ledger desk accounting",
+    "source": "Unsplash"
+  }
+}

@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QORV — Sistem Desain Web</title>
+<style>
+  /* Dokumen ini dirender dengan sistem yang didokumentasikannya sendiri, jadi
+     setiap contoh di bawah adalah spesimen hidup, bukan gambar. Tanpa CDN dan
+     tanpa font eksternal supaya tetap benar ketika dibuka langsung dari disk. */
+  :root{
+    --paper:#e9e9e3; --paper-dim:#deded6; --ink:#0b0b0b; --ink-soft:#5f5f58;
+    --acid:#d4ff00; --danger:#d92d20;
+    --display:"Archivo Black","Arial Black","Helvetica Neue",Helvetica,sans-serif;
+    --body:"Helvetica Neue",Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink-soft);font-family:var(--body);
+       font-size:15px;line-height:1.65;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1100px;margin:0 auto;padding:0 clamp(1rem,4vw,3rem)}
+  h1,h2,h3,h4{font-family:var(--display);font-weight:900;text-transform:uppercase;
+       color:var(--ink);letter-spacing:-.045em;line-height:.9;margin:0}
+  h1{font-size:clamp(2.4rem,7vw,4.5rem)}
+  h2{font-size:clamp(1.7rem,3.6vw,2.5rem)}
+  h3{font-size:1.25rem}
+  h4{font-size:1rem}
+  p{margin:0 0 1rem}
+  code{background:var(--paper-dim);padding:.1em .4em;font-size:.9em}
+  b{color:var(--ink)}
+  .label{font-weight:800;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase}
+  .tag{display:inline-block;background:var(--ink);color:var(--acid);padding:.5rem .8rem}
+  header.top{border-bottom:3px solid var(--ink);padding:clamp(3rem,7vw,5rem) 0}
+  section{border-bottom:3px solid var(--ink);padding:clamp(2.5rem,6vw,4rem) 0}
+  .lede{max-width:62ch;font-size:16px}
+  .grid{display:grid;gap:3px;background:var(--ink);border:3px solid var(--ink);margin:1.5rem 0}
+  .grid>div{background:var(--paper);padding:1.25rem}
+  .c2{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+  .c3{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+  .c4{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+  .swatch{height:84px;border:3px solid var(--ink);margin-bottom:.75rem}
+  .demo{border:3px solid var(--ink);background:var(--paper);padding:1.5rem;margin:1.25rem 0}
+  .btn{display:inline-flex;align-items:center;justify-content:center;height:44px;padding:0 1.25rem;
+       border:3px solid var(--ink);background:var(--acid);color:var(--ink);font-weight:800;
+       font-size:12px;letter-spacing:.14em;text-transform:uppercase;text-decoration:none;
+       box-shadow:5px 5px 0 var(--ink);cursor:pointer;
+       transition:transform 100ms linear,box-shadow 100ms linear}
+  .btn:hover{transform:translate(2px,2px);box-shadow:3px 3px 0 var(--ink)}
+  .btn:active{transform:translate(5px,5px);box-shadow:none}
+  .btn-ink{background:var(--ink);color:var(--paper)}
+  .btn-paper{background:var(--paper)}
+  .btn-danger{background:var(--danger);color:#fff}
+  .row{display:flex;flex-wrap:wrap;gap:1rem;align-items:center}
+  table{width:100%;border-collapse:collapse;margin:1.25rem 0;font-size:14px}
+  th,td{border:3px solid var(--ink);padding:.7rem .8rem;text-align:left;vertical-align:top}
+  th{background:var(--paper-dim);color:var(--ink);font-weight:800;font-size:11px;
+     letter-spacing:.14em;text-transform:uppercase}
+  .drop1{box-shadow:5px 5px 0 var(--ink)}
+  .drop2{box-shadow:9px 9px 0 var(--ink)}
+  .drop3{box-shadow:16px 16px 0 var(--ink)}
+  .note{border-left:8px solid var(--acid);background:var(--paper-dim);padding:1.1rem 1.3rem;margin:1.25rem 0}
+  .warn{border-left:8px solid var(--danger);background:var(--paper-dim);padding:1.1rem 1.3rem;margin:1.25rem 0}
+  ul{margin:0 0 1rem;padding-left:1.1rem}
+  li{margin-bottom:.4rem}
+  .mark{display:inline-flex;align-items:center;font-family:var(--display);font-weight:900;
+        font-size:1.5rem;letter-spacing:-.07em;color:var(--ink)}
+  .mark i{display:inline-block;width:9px;height:9px;background:var(--acid);margin-left:.5rem}
+  .field{width:100%;min-height:46px;border:3px solid var(--ink);background:var(--paper);
+         padding:.6rem .8rem;font:inherit;color:var(--ink)}
+  .field:focus{outline:none;border-color:var(--acid)}
+  .pill{display:inline-flex;border:3px solid var(--ink);padding:.35rem .7rem;
+        font-weight:800;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase}
+  .toc a{color:var(--ink);text-decoration:none;border-bottom:3px solid var(--acid)}
+  footer{padding:2rem 0 4rem}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="mark">QORV<i></i></div>
+    <h1 style="margin-top:1.5rem">Sistem Desain Web</h1>
+    <p class="lede" style="margin-top:1.5rem">
+      Spesifikasi antarmuka situs qorv.id. Dokumen ini <b>bukan pengganti</b>
+      <code>brand_guidelines.html</code> — dokumen itu mengatur identitas perusahaan
+      lintas kemasan, 3D, dan cetak. Yang di sini hanya berlaku untuk web.
+    </p>
+    <p class="lede">
+      Setiap contoh di halaman ini dirender dengan sistem yang didokumentasikannya,
+      jadi semuanya spesimen hidup, bukan tangkapan layar.
+    </p>
+    <p class="label" style="margin-top:2rem">Terakhir diperbarui 4 Agustus 2026 · Fase 1–4</p>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <span class="tag label">00</span>
+    <h2 style="margin-top:1rem">Lima aturan yang mengikat semuanya</h2>
+    <p class="lede">
+      Kalau ada keputusan desain yang bertabrakan dengan salah satu aturan ini,
+      aturan ini yang menang.
+    </p>
+    <table>
+      <tr><th style="width:3rem">#</th><th>Aturan</th><th>Konsekuensinya</th></tr>
+      <tr><td><b>1</b></td><td>Ground adalah <b>kertas</b>. Hitam hanya untuk garis, teks, dan bayangan.</td>
+          <td>Tidak ada bidang latar hitam di manapun, termasuk section harga dan footer.</td></tr>
+      <tr><td><b>2</b></td><td>Acid selalu <b>bidang penuh</b>, tidak pernah warna teks di atas terang.</td>
+          <td>Teks acid di atas kertas tidak terbaca. Yang berwarna bidangnya; tulisannya tinta.</td></tr>
+      <tr><td><b>3</b></td><td><b>Sudut siku.</b> Nol radius, nol blur, nol gradien pada UI.</td>
+          <td>Gradien hanya boleh ada di dalam foto, tidak pernah pada permukaan.</td></tr>
+      <tr><td><b>4</b></td><td><b>Hirarki adalah tinggi fisik.</b> Yang lebih penting membuang bayangan lebih panjang.</td>
+          <td>Tidak ada lencana "populer" atau "rekomendasi" di manapun.</td></tr>
+      <tr><td><b>5</b></td><td>Bingkai dan bayangan berarti "<b>benda ini terangkat</b>".</td>
+          <td>Alamat email, tautan, dan label adalah teks datar — bukan kotak.</td></tr>
+    </table>
+    <div class="warn">
+      <b>Jangan pernah membuat utility CSS bernama <code>.block</code>.</b>
+      Nama itu bentrok dengan <code>display:block</code> milik Tailwind. Ketika hal ini
+      pernah terjadi, 18 elemen yang hanya ingin jadi block-level ikut menggambar
+      bingkai dan bayangan yang tidak diminta siapapun. Utility kustom hanya boleh
+      memakai nama yang tidak dipakai Tailwind.
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="tag label">01</span>
+    <h2 style="margin-top:1rem">Palet</h2>
+    <p class="lede">
+      Empat warna. Kertasnya sengaja <b>dingin</b>, bukan krem hangat — krem membuat
+      acid bergeser kehijauan dan membuat hitamnya terbaca sebagai abu, bukan tinta.
+    </p>
+    <div class="grid c4">
+      <div><div class="swatch" style="background:#e9e9e3"></div>
+        <h4>Paper</h4><p class="label">#E9E9E3 · ground</p></div>
+      <div><div class="swatch" style="background:#deded6"></div>
+        <h4>Paper Dim</h4><p class="label">#DEDED6 · sel pasif, skeleton</p></div>
+      <div><div class="swatch" style="background:#0b0b0b"></div>
+        <h4>Ink</h4><p class="label">#0B0B0B · garis, teks, bayangan</p></div>
+      <div><div class="swatch" style="background:#d4ff00"></div>
+        <h4>Acid</h4><p class="label">#D4FF00 · aksen tunggal</p></div>
+    </div>
+    <table>
+      <tr><th>Token</th><th>Nilai</th><th>Dipakai untuk</th></tr>
+      <tr><td><code>--color-paper</code></td><td>#E9E9E3</td><td>Latar halaman dan seluruh sel kartu</td></tr>
+      <tr><td><code>--color-paper-dim</code></td><td>#DEDED6</td><td>Sel nonaktif, header tabel, placeholder gambar</td></tr>
+      <tr><td><code>--color-ink</code></td><td>#0B0B0B</td><td>Garis 3px, judul, bayangan padat</td></tr>
+      <tr><td><code>--color-ink-soft</code></td><td>#5F5F58</td><td>Teks tubuh dan label — warna dasar <code>body</code></td></tr>
+      <tr><td><code>--color-acid</code></td><td>#D4FF00</td><td>Aksi utama, keadaan aktif, satu bidang per layar</td></tr>
+      <tr><td><code>--color-danger</code></td><td>#D92D20</td><td>Hapus, galat, batas kolom tidak valid</td></tr>
+    </table>
+    <div class="note">
+      <b>Alias sementara.</b> <code>global.css</code> masih memetakan nama palet lama
+      (<code>void</code>, <code>chrome</code>, <code>line</code>, <code>muted</code>,
+      <code>faint</code>, <code>graphite</code>) ke palet kertas, supaya berkas yang
+      belum dimigrasi tetap ter-compile. Alias itu dihapus setelah pemakaian terakhirnya
+      hilang.
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="tag label">02</span>
+    <h2 style="margin-top:1rem">Tipografi</h2>
+    <p class="lede">
+      Space Grotesk 700 uppercase untuk display, Plus Jakarta Sans untuk teks tubuh.
+      Keduanya dimuat lewat <code>next/font/google</code>, jadi tidak ada permintaan
+      jaringan pihak ketiga saat runtime.
+    </p>
+    <table>
+      <tr><th>Kelas</th><th>Ukuran</th><th>Dipakai untuk</th></tr>
+      <tr><td><code>.rank-1</code></td><td>clamp(3rem → 8rem)</td><td>Judul halaman, satu per halaman</td></tr>
+      <tr><td><code>.rank-2</code></td><td>clamp(2.1rem → 4.6rem)</td><td>Judul section</td></tr>
+      <tr><td><code>.rank-3</code></td><td>clamp(1.75rem → 2.75rem)</td><td>Sub-section, angka statistik</td></tr>
+      <tr><td><code>.rank-4</code></td><td>clamp(1.3rem → 1.75rem)</td><td>Judul kartu</td></tr>
+      <tr><td><code>.rank-5</code></td><td>clamp(1.06rem → 1.25rem)</td><td>Judul baris daftar</td></tr>
+      <tr><td><code>.label</code></td><td>11px / tracking .2em</td><td>Eyebrow, meta, legend. <b>Tanpa <code>color</code></b></td></tr>
+      <tr><td><code>.tabular</code></td><td>—</td><td>Wajib untuk setiap kolom angka</td></tr>
+    </table>
+    <div class="warn">
+      <b><code>.label</code> sengaja tidak menetapkan <code>color</code>.</b>
+      Ia hidup di layer utilities yang sama dengan <code>text-*</code>, jadi
+      spesifisitasnya seri dan pemenangnya ditentukan urutan sumber. Ketika ia pernah
+      menetapkan warna, <code>label text-acid</code> di atas blok tinta terbaca abu.
+      Warna dasarnya kini datang dari pewarisan <code>body</code>.
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="tag label">03</span>
+    <h2 style="margin-top:1rem">Tangga bayangan</h2>
+    <p class="lede">
+      Satu tangga untuk seluruh situs. Panjang bayangan <b>menandakan tinggi</b>, jadi
+      nilainya tidak dipilih per komponen — dipilih per tingkat kepentingan.
+    </p>
+    <div class="grid c3">
+      <div><div class="demo drop1" style="margin:0 0 1rem">5px</div>
+        <h4>drop-1</h4><p class="label">Tombol, penyaring</p></div>
+      <div><div class="demo drop2" style="margin:0 0 1rem">9px</div>
+        <h4>drop-2</h4><p class="label">Kartu biasa, panel</p></div>
+      <div><div class="demo drop3" style="margin:0 0 1rem">16px</div>
+        <h4>drop-3</h4><p class="label">Disiplin unggulan, tier utama</p></div>
+    </div>
+    <p class="lede">
+      Tombol bergerak <b>tepat sejauh bayangan yang hilang</b>: hover memendekkan
+      5px→3px dan menggeser 2px; ditekan memendekkan ke 0 dan menggeser 5px. Kalau
+      jaraknya tidak sama, tombolnya terbaca melayang, bukan turun.
+    </p>
+    <div class="demo">
+      <div class="row">
+        <span class="btn">Primary</span>
+        <span class="btn btn-ink">Secondary</span>
+        <span class="btn btn-paper">Outline</span>
+        <span class="btn btn-danger">Danger</span>
+      </div>
+      <p class="label" style="margin-top:1rem">Arahkan pointer dan tekan untuk melihat fisikanya.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="tag label">04</span>
+    <h2 style="margin-top:1rem">Komponen</h2>
+
+    <h3 style="margin-top:2rem">Grid bersel</h3>
+    <p class="lede">
+      Konstruksi paling sering dipakai: <code>gap-[3px]</code> di atas latar tinta,
+      dibingkai <code>border-3</code>. Dipakai di strip angka, footer, daftar layanan,
+      tabel admin, dan kanal kontak.
+    </p>
+    <div class="grid c4">
+      <div><p class="label">Proyek</p><h3 style="margin-top:.5rem">42</h3></div>
+      <div style="background:#d4ff00"><p class="label">Disiplin</p><h3 style="margin-top:.5rem">06</h3></div>
+      <div><p class="label">Produk</p><h3 style="margin-top:.5rem">05</h3></div>
+      <div><p class="label">Sejak</p><h3 style="margin-top:.5rem">2018</h3></div>
+    </div>
+    <div class="warn">
+      Trik <code>gap</code> ini <b>hanya benar pada grid berkolom sama rata</b>. Pada
+      grid selebar konten (<code>w-fit</code>), sel tidak melar mengikuti sel terlebar
+      dan latar tinta menyembul di sisi kanan baris terpendek. Untuk daftar selebar
+      konten, pakai <code>divide-y-3</code>.
+    </div>
+
+    <h3 style="margin-top:2.5rem">Eyebrow, tag, dan pill status</h3>
+    <div class="demo">
+      <div class="row">
+        <span class="tag label">Karya</span>
+        <span class="pill">Draft</span>
+        <span class="pill" style="background:#d4ff00">Published</span>
+        <span class="pill" style="background:#d92d20;color:#fff;border-color:#d92d20">Danger</span>
+      </div>
+    </div>
+    <p class="lede">
+      Warna selalu jadi <b>bidang</b>. Versi sebelumnya menyetel teks acid di atas latar
+      acid 12% — cukup di ground gelap, praktis tidak terbaca di atas kertas.
+    </p>
+
+    <h3 style="margin-top:2.5rem">Kolom isian</h3>
+    <div class="demo">
+      <p class="label" style="margin-bottom:.5rem">Email</p>
+      <input class="field" type="email" placeholder="anda@perusahaan.com">
+      <p class="label" style="margin:1.25rem 0 .5rem">Kisaran anggaran</p>
+      <div class="grid c4" style="margin:0">
+        <div style="text-align:center" class="label">&lt; 10 jt</div>
+        <div style="text-align:center;background:#d4ff00" class="label">10–50 jt</div>
+        <div style="text-align:center" class="label">50–200 jt</div>
+        <div style="text-align:center" class="label">Belum ditentukan</div>
+      </div>
+    </div>
+    <p class="lede">
+      Fokus ditandai dengan <b>mengganti warna garis jadi acid</b>, bukan menambah
+      cincin di luar kotak — garis 3px sudah cukup tebal membawa keadaan fokus sendiri.
+      Pilihan berkotak memakai grid berkolom tetap, bukan <code>flex-wrap</code> dengan
+      <code>flex-1</code>: kombinasi itu membuat sel baris terakhir melar dan kolomnya
+      tidak pernah berbaris.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="tag label">05</span>
+    <h2 style="margin-top:1rem">Motion</h2>
+    <p class="lede">
+      Satu ide koreografi, bukan efek yang ditabur: <b>benda diletakkan ke atas kertas</b>.
+      Masuk dengan turun sedikit, lalu bayangannya tumbuh dari nol ke panjang penuh —
+      kebalikan persis dari tombol yang ditekan.
+    </p>
+    <table>
+      <tr><th>Kelas</th><th>Gerak</th><th>Durasi</th></tr>
+      <tr><td><code>.line-mask</code></td><td>Baris judul tercetak dari bawah lewat mask</td><td>900ms</td></tr>
+      <tr><td><code>.place</code></td><td>Turun 14px → 0, bayangan 0 → 9px</td><td>620ms</td></tr>
+      <tr><td><code>.place-tall</code></td><td>Sama, tapi mendarat ke bayangan 16px</td><td>620ms</td></tr>
+      <tr><td><code>.rise</code></td><td>Teks pendukung naik 16px</td><td>700ms</td></tr>
+      <tr><td><code>.settle</code></td><td>Isi bingkai mengendap dari skala 1.06</td><td>1000ms</td></tr>
+      <tr><td><code>.d-1 .d-2 .d-3</code></td><td>Tunda berantai</td><td>110 / 220 / 330ms</td></tr>
+    </table>
+    <p class="lede">
+      Judul dibuka dengan mask, bukan fade. Fade membuat tipografi berat terlihat ragu;
+      mask membuatnya terlihat dicetak.
+    </p>
+    <div class="warn">
+      <b>Konten di atas lipatan tidak boleh bergantung pada JavaScript untuk terlihat.</b>
+      <code>PageHead</code> pernah memakai mask dan <code>.rise</code> tanpa ada yang
+      memasang <code>data-in</code> padanya — judul setiap halaman dalam tetap
+      <code>opacity:0</code> selamanya, dan yang tampak hanya ruang kosong besar di atas.
+    </div>
+    <p class="lede">
+      <b>Tidak ada satupun gerak yang terikat posisi scroll.</b> Semuanya sekali jalan
+      lewat <code>IntersectionObserver</code>. GSAP dan ScrollTrigger sudah dicabut
+      sepenuhnya dari bundel situs publik. Lenis tetap dipakai untuk kehalusan gulir
+      saja, digerakkan <code>requestAnimationFrame</code> biasa.
+    </p>
+    <div class="note">
+      Di bawah <code>prefers-reduced-motion</code>, setiap benda langsung berada di
+      keadaan akhirnya — <b>termasuk bayangannya</b>, karena bayangan itulah yang
+      membawa hirarki. Menghilangkannya akan menghapus informasi, bukan sekadar animasi.
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="tag label">06</span>
+    <h2 style="margin-top:1rem">Layout</h2>
+    <p class="lede">
+      Container <code>max-w-[1560px]</code> dengan padding 1rem → 3rem. Ritme vertikal
+      punya dua ukuran: <code>.band</code> untuk section biasa, <code>.band-lg</code>
+      untuk dua atau tiga momen yang perlu bernapas.
+    </p>
+    <table>
+      <tr><th>Section</th><th>Grid</th><th>Kenapa berbeda</th></tr>
+      <tr><td>Karya (beranda &amp; indeks)</td><td>3 kolom × 2 baris</td><td>Enam kartu, genap, tidak ada sel yatim</td></tr>
+      <tr><td>Produk</td><td>4 kolom, 1 baris</td><td>Isi per kartu lebih sedikit, jadi sel boleh lebih sempit</td></tr>
+      <tr><td>Disiplin (beranda)</td><td>Rel horizontal ber-snap + daftar rapat</td><td>Tiga unggulan berdiri lebih tinggi, tiga sisanya jadi baris</td></tr>
+      <tr><td>Layanan (indeks)</td><td>3 kolom × 2 baris</td><td>Daftar lengkap, keenamnya setara</td></tr>
+      <tr><td>Cara kerja</td><td>4 kolom bersel</td><td>Empat langkah, nomor di kotak acid</td></tr>
+      <tr><td>Harga</td><td>3 tier, tinggi berbeda</td><td>Tier utama padding 11 vs 7, bayangan 16 vs 9</td></tr>
+      <tr><td>Kontak</td><td>Strip 4 kanal + formulir penuh</td><td>Kanal dibaca lebih dulu; kolom sempit di sebelah formulir menyisakan lubang</td></tr>
+      <tr><td>Footer</td><td>4 × 2 sel bersel</td><td>Baris atas indeks bernomor, sel terakhir bidang acid</td></tr>
+    </table>
+    <p class="lede">
+      <b>Setiap section rapi dan simetris ke dalam.</b> Perbedaannya ditanggung
+      <b>antar</b> section lewat jumlah kolom — bukan oleh sel yang saling berbeda di
+      dalam satu grid. Grid berlebar bergantian (7/5 · 5/7 · 6/6) pernah dicoba dan
+      gagal: enam kartu dengan tiga lebar berbeda tidak berbagi satu garis dasar pun,
+      dan yang muncul bukan ritme melainkan barisan yang terlihat miring.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="tag label">07</span>
+    <h2 style="margin-top:1rem">Peta halaman</h2>
+    <p class="lede">Semua rute publik ada di bawah <code>/[locale]</code>, dengan <code>en</code> dan <code>id</code>.</p>
+    <table>
+      <tr><th>Rute</th><th>Isi</th></tr>
+      <tr><td><code>/</code></td><td>Hero, pita disiplin, karya, klien, disiplin, cara kerja, produk, harga, ajakan</td></tr>
+      <tr><td><code>/work</code> · <code>/work/[slug]</code></td><td>Indeks berpenyaring kategori · studi kasus</td></tr>
+      <tr><td><code>/services</code> · <code>/services/[slug]</code></td><td>Enam disiplin · lingkup, proses, paket, FAQ</td></tr>
+      <tr><td><code>/products</code> · <code>/products/[slug]</code></td><td>Indeks berpenyaring status · fitur, spesifikasi, changelog</td></tr>
+      <tr><td><code>/pricing</code></td><td>Agregat paket layanan + lisensi produk + FAQ. <b>Tidak memiliki harga apapun</b></td></tr>
+      <tr><td><code>/about</code> · <code>/contact</code></td><td>Persona, kapabilitas, prinsip · kanal langsung + formulir</td></tr>
+      <tr><td><code>/_not-found</code></td><td>404 tingkat root, membawa <code>&lt;html&gt;</code> sendiri</td></tr>
+    </table>
+    <div class="note">
+      <b>404 ada dua, dan keduanya perlu.</b> Yang di dalam <code>[locale]</code> hanya
+      menangani <code>notFound()</code> dari halaman di segmen itu. URL yang tidak cocok
+      dengan rute manapun jatuh ke root — dan tanpa <code>app/not-found.tsx</code>, yang
+      tampil adalah 404 bawaan Next: layar putih polos tanpa sepotong pun desain situs.
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="tag label">08</span>
+    <h2 style="margin-top:1rem">Panel admin</h2>
+    <table>
+      <tr><th>Kemampuan</th><th style="width:6rem">Dev</th><th style="width:6rem">Admin</th></tr>
+      <tr><td>Proyek, layanan, produk, pertanyaan masuk, pengaturan</td><td>✅</td><td>✅</td></tr>
+      <tr><td>Kelola pengguna</td><td>✅</td><td>—</td></tr>
+    </table>
+    <p class="lede">
+      Kalau <code>admin</code> boleh mengelola pengguna, ia bisa menaikkan perannya
+      sendiri jadi <code>dev</code>, dan pembatasannya tidak berarti apa-apa. Menu Users
+      disembunyikan dari <code>admin</code>, tapi <b>itu hanya tampilan</b> —
+      <code>requireRole('dev')</code> dipasang di halaman dan di setiap server action,
+      karena server action punya URL dan bisa dipanggil langsung.
+    </p>
+    <h3 style="margin-top:2rem">Autentikasi</h3>
+    <ul>
+      <li>Login <b>email + password</b>. Password disimpan sebagai hash <code>scrypt</code> (<code>salt:hash</code>), tidak pernah polos.</li>
+      <li>Cookie sesi membawa <code>userId.expiresAt.signature</code>. <b>Peran tidak ikut ditulis di cookie</b> — ia dibaca ulang dari penyimpanan setiap permintaan, jadi mencabut akses berlaku seketika.</li>
+      <li>Rate limit <b>per alamat email</b>. Penghitung global membuat satu penebak bisa mengunci semua operator lain keluar.</li>
+      <li>Email tak dikenal, password salah, dan akun nonaktif menghasilkan pesan yang sama, dan sama-sama menjalankan satu verifikasi scrypt supaya waktu jawabnya tidak membocorkan alamat mana yang terdaftar.</li>
+      <li><code>dev</code> aktif terakhir tidak bisa diturunkan, dinonaktifkan, atau dihapus. Akun sendiri tidak bisa dihapus.</li>
+    </ul>
+    <div class="warn">
+      <b>Sebelum produksi:</b> ganti <code>ADMIN_SECRET</code> — nilai placeholder
+      pengembangan lolos ambang 16 karakter, jadi ia bisa ikut terbawa tanpa disadari.
+      Siapa pun yang tahu nilainya bisa menempa cookie sesi.
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="tag label">09</span>
+    <h2 style="margin-top:1rem">Yang belum selesai</h2>
+    <p class="lede">Dicatat supaya tidak terlihat sebagai keputusan desain.</p>
+    <table>
+      <tr><th>Item</th><th>Keadaan</th></tr>
+      <tr><td>Konten</td><td>Masih data seed — 8 proyek fiktif, testimoni dan logo klien karangan, foto stok. <b>Angka harga di situs juga karangan</b> dan belum dikonfirmasi.</td></tr>
+      <tr><td>Verifikasi visual</td><td>Diverifikasi lewat typecheck, lint, dan build. <b>Sebagian besar halaman belum pernah dilihat ter-render.</b></td></tr>
+      <tr><td>Aksesibilitas &amp; Lighthouse</td><td>Belum dijalankan. Butuh browser.</td></tr>
+      <tr><td>Freeze saat gulir</td><td>Dua penyebab dicabut (tween per frame di marquee, ScrollTrigger per instance). Belum diverifikasi ulang di browser.</td></tr>
+      <tr><td>Persistensi</td><td>Penyimpanan di memori. Pengguna dan konten yang dibuat lewat panel hilang saat server restart — Fase 5 (Vercel KV) menggantinya.</td></tr>
+      <tr><td>Dokumen proyek</td><td><code>PROJECT_MEMORY.md</code> dan <code>TASKS.md</code> masih menggambarkan sistem gelap yang lama dan kredensial yang sudah tidak berlaku.</td></tr>
+      <tr><td>Alias palet</td><td>Nama lama masih dipetakan di <code>global.css</code>; dihapus setelah pemakaian terakhirnya hilang.</td></tr>
+    </table>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="mark">QORV<i></i></div>
+    <p class="label" style="margin-top:1rem">
+      Sistem Desain Web · Berlaku untuk qorv.id saja ·
+      Identitas perusahaan diatur terpisah di brand_guidelines.html
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>

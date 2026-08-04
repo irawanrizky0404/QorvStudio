@@ -1,0 +1,376 @@
+@import 'tailwindcss';
+
+/**
+ * Design layer — QORV.
+ *
+ * ── Bahasa visual: "bingkai datar, isi berdimensi" ───────────────────────────
+ *
+ *   1. Ground adalah KERTAS dingin, bukan hitam. Hitam hanya dipakai sebagai
+ *      garis, teks, dan bayangan — tidak pernah sebagai bidang latar.
+ *   2. Acid adalah satu-satunya aksen, dan ia selalu BIDANG PENUH, bukan
+ *      glow, bukan gradien, bukan warna teks di atas terang.
+ *   3. Bidang keras: garis tinta 3px, sudut siku, bayangan offset padat.
+ *      Tidak ada radius, tidak ada blur, tidak ada gradien pada UI.
+ *   4. HIRARKI ADALAH TINGGI FISIK. Yang lebih penting membuang bayangan
+ *      lebih panjang. Tidak ada badge "populer" di manapun.
+ *   5. Yang berdimensi hanya ISI bingkai — foto dan render. UI-nya rata.
+ *
+ * ── Kenapa file ini ditulis ulang total ──────────────────────────────────────
+ * Versi sebelumnya menyalin aturan identitas merek (radius 0, shadow none,
+ * hairline 1px sebagai satu-satunya elevasi, semuanya digambar dengan abu 35%)
+ * menjadi aturan web. Itu aturan kemasan dan logotype. Diterapkan ke situs, ia
+ * melarang setiap alat yang membuat permukaan terasa nyata.
+ *
+ * ── Penamaan ─────────────────────────────────────────────────────────────────
+ * Nama semantik baru (`paper`, `ink`, `acid`) dipakai untuk kode baru. Nama
+ * lama (`void`, `chrome`, `line`, `muted`) dipertahankan sebagai alias supaya
+ * 41 file yang belum dimigrasi tetap ter-compile dan tetap terbaca benar di
+ * palet baru. Alias dihapus setelah halaman terakhir dimigrasi.
+ */
+@theme {
+  /* ── Ground ─────────────────────────────────────────────────────────────── */
+  /* Kertas dingin, bukan krem hangat: menjaga acid tidak berubah kehijauan dan
+     membuat hitamnya terbaca sebagai tinta, bukan sebagai abu. */
+  --color-paper: #e9e9e3;
+  --color-paper-dim: #deded6;
+
+  /* ── Tinta ──────────────────────────────────────────────────────────────── */
+  --color-ink: #0b0b0b;
+  --color-ink-soft: #5f5f58;
+
+  /* ── Aksen ──────────────────────────────────────────────────────────────── */
+  --color-acid: #d4ff00;
+
+  --color-danger: #d92d20;
+
+  /* ── Alias lama ─────────────────────────────────────────────────────────── */
+  /* Dipetakan ke palet baru supaya halaman yang belum dimigrasi tidak pecah.
+     `bg-void` kini kertas, `text-chrome` kini tinta. Sementara. */
+  --color-void: #e9e9e3;
+  --color-graphite: #deded6;
+  --color-chrome: #0b0b0b;
+  --color-muted: #5f5f58;
+  --color-faint: #7c7c74;
+  --color-line: #0b0b0b;
+  --color-line-strong: #0b0b0b;
+
+  /* ── Tipe ───────────────────────────────────────────────────────────────── */
+  --font-display: var(--font-space-grotesk), sans-serif;
+  --font-body: var(--font-jakarta), sans-serif;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    border-color: var(--color-ink);
+  }
+
+  html {
+    scroll-behavior: auto;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink-soft);
+    font-family: var(--font-body);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background-color: var(--color-acid);
+    color: var(--color-ink);
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-ink);
+    outline-offset: 3px;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: -0.045em;
+    line-height: 0.88;
+    color: var(--color-ink);
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  img,
+  video {
+    max-width: 100%;
+    height: auto;
+  }
+
+  ::-webkit-scrollbar {
+    width: 12px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-paper-dim);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-ink);
+  }
+}
+
+@layer utilities {
+  /* ══════════════════════════════════════════════════════════════════════════
+     TANGGA BAYANGAN
+     Satu tangga untuk seluruh situs. Panjang bayangan MENANDAKAN TINGGI, jadi
+     nilainya tidak boleh dipilih per komponen — dipilih per tingkat kepentingan.
+     ══════════════════════════════════════════════════════════════════════════ */
+  .drop-1 {
+    box-shadow: 5px 5px 0 var(--color-ink);
+  }
+  .drop-2 {
+    box-shadow: 9px 9px 0 var(--color-ink);
+  }
+  /* Hanya untuk yang paling ingin dijual: disiplin unggulan, tier utama. */
+  .drop-3 {
+    box-shadow: 16px 16px 0 var(--color-ink);
+  }
+
+  /*
+   * TIDAK ADA utility bernama `.block` di sini, dan tidak boleh pernah ada.
+   *
+   * Sebelumnya file ini mendefinisikan `.block` sebagai kartu kertas bergaris
+   * tinta dengan bayangan 9px. Nama itu bentrok langsung dengan `display: block`
+   * milik Tailwind, jadi 18 elemen yang cuma ingin jadi block-level — termasuk
+   * tautan email dan nomor WhatsApp di halaman kontak — ikut menggambar bingkai
+   * dan bayangan yang tidak diminta siapapun.
+   *
+   * Kartu ditulis dengan kelas Tailwind langsung
+   * (`border-3 border-ink bg-paper shadow-[9px_9px_0_var(--color-ink)]`) atau
+   * lewat komponen `Card`. Utility kustom di sini hanya boleh memakai nama yang
+   * tidak dipakai Tailwind.
+   */
+
+  /* ══════════════════════════════════════════════════════════════════════════
+     TIPE
+     ══════════════════════════════════════════════════════════════════════════ */
+  .display {
+    font-family: var(--font-display);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: -0.045em;
+    line-height: 0.88;
+    color: var(--color-ink);
+  }
+  .display-bold {
+    font-weight: 700;
+  }
+
+  .wordmark {
+    font-family: var(--font-display);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: -0.07em;
+  }
+
+  /**
+   * Eyebrow.
+   *
+   * Sengaja TIDAK menetapkan `color`. Sebelumnya ia memaksa `--color-ink-soft`,
+   * dan karena ia hidup di layer utilities yang sama dengan `text-*`, keduanya
+   * berspesifisitas sama — pemenangnya ditentukan urutan sumber, bukan niat.
+   * Akibatnya `label text-acid` pada blok tinta terbaca abu di atas hitam.
+   *
+   * Warna default kini datang dari pewarisan, dan `body` sudah berwarna
+   * `--color-ink-soft` — jadi tampilan tanpa utility tidak berubah sama sekali,
+   * sementara `text-acid` / `text-ink` sekarang menang seperti seharusnya.
+   */
+  .label {
+    font-family: var(--font-body);
+    font-weight: 800;
+    font-size: 0.6875rem;
+    line-height: 1;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .rank-1 {
+    font-size: clamp(3rem, 2rem + 5.4vw, 8rem);
+    line-height: 0.86;
+    letter-spacing: -0.05em;
+  }
+  .rank-2 {
+    font-size: clamp(2.1rem, 1.5rem + 2.8vw, 4.6rem);
+    line-height: 0.9;
+    letter-spacing: -0.045em;
+  }
+  .rank-3 {
+    font-size: clamp(1.75rem, 1.4rem + 1.5vw, 2.75rem);
+    line-height: 0.96;
+    letter-spacing: -0.04em;
+  }
+  .rank-4 {
+    font-size: clamp(1.3rem, 1.15rem + 0.7vw, 1.75rem);
+    line-height: 1.06;
+    letter-spacing: -0.03em;
+  }
+  .rank-5 {
+    font-size: clamp(1.0625rem, 1rem + 0.28vw, 1.25rem);
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ══════════════════════════════════════════════════════════════════════════
+     RITME
+     ══════════════════════════════════════════════════════════════════════════ */
+  .band {
+    padding-block: clamp(3.5rem, 2.6rem + 3.6vw, 6.5rem);
+  }
+  .band-lg {
+    padding-block: clamp(4.5rem, 3.2rem + 5vw, 8.5rem);
+  }
+
+  /* ══════════════════════════════════════════════════════════════════════════
+     MOTION — satu ide: BENDA DILETAKKAN KE ATAS KERTAS.
+
+     Masuk dengan turun sedikit, lalu BAYANGANNYA TUMBUH DARI NOL ke panjang
+     penuh. Itu kebalikan persis dari tombol yang ditekan, jadi seluruh situs
+     memakai satu fisika. Kelas-kelas ini disetel oleh `Reveal`, yang memasang
+     `data-in` sekali saat masuk viewport — tidak ada yang terikat posisi scroll.
+     ══════════════════════════════════════════════════════════════════════════ */
+
+  /* Baris judul: tercetak dari bawah, bukan memudar. Fade membuat tipografi
+     berat terlihat ragu; mask membuatnya terlihat dicetak. */
+  .line-mask {
+    display: block;
+    overflow: hidden;
+    padding-bottom: 0.06em;
+  }
+  .line-mask > span {
+    display: block;
+    transform: translateY(102%);
+  }
+  [data-in] .line-mask > span {
+    transform: translateY(0);
+    transition: transform 900ms var(--ease-out-expo);
+  }
+
+  .place {
+    opacity: 0;
+    transform: translateY(-14px);
+    box-shadow: 0 0 0 var(--color-ink);
+  }
+  [data-in] .place {
+    opacity: 1;
+    transform: translateY(0);
+    box-shadow: 9px 9px 0 var(--color-ink);
+    transition:
+      opacity 420ms var(--ease-out-expo),
+      transform 620ms var(--ease-out-expo),
+      box-shadow 620ms var(--ease-out-expo);
+  }
+  /* Benda yang berdiri lebih tinggi mendarat ke bayangan yang lebih panjang. */
+  [data-in] .place-tall {
+    box-shadow: 16px 16px 0 var(--color-ink);
+  }
+
+  .rise {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  [data-in] .rise {
+    opacity: 1;
+    transform: translateY(0);
+    transition:
+      opacity 520ms var(--ease-out-expo),
+      transform 700ms var(--ease-out-expo);
+  }
+
+  /* Isi bingkai jatuh lebih lambat dari bingkainya — itu yang membuatnya
+     terbaca berada DI DALAM ruang, bukan tertempel pada bingkai. */
+  .settle {
+    opacity: 0;
+    transform: scale(1.06);
+  }
+  [data-in] .settle {
+    opacity: 1;
+    transform: scale(1);
+    transition:
+      opacity 500ms var(--ease-out-expo) 120ms,
+      transform 1000ms var(--ease-out-expo) 120ms;
+  }
+
+  /**
+   * Pita berjalan.
+   *
+   * Animasi CSS murni, tanpa JavaScript sama sekali. Versi lama memakai GSAP
+   * dan memanggil `gsap.to()` di dalam `onUpdate` ScrollTrigger — satu tween
+   * baru per frame scroll, lengkap dengan overwrite scan. Itu yang membekukan
+   * tab saat digulir. Tidak ada di sini yang perlu tahu posisi scroll.
+   *
+   * Dua salinan daftar berjejer, jadi -50% mendarat tepat di sambungan.
+   */
+  .ticker-track {
+    display: flex;
+    width: max-content;
+    animation: qorv-run 30s linear infinite;
+  }
+  @keyframes qorv-run {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  /* Tunda berantai. Ditulis sebagai kelas, bukan style inline, supaya urutan
+     masuk terlihat di markup. */
+  .d-1 {
+    transition-delay: 110ms !important;
+  }
+  .d-2 {
+    transition-delay: 220ms !important;
+  }
+  .d-3 {
+    transition-delay: 330ms !important;
+  }
+}
+
+/* Gerak dimatikan sepenuhnya, dan setiap benda langsung berada di keadaan
+   akhirnya — termasuk bayangannya, yang membawa hirarki. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .line-mask > span,
+  .settle {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+  .place,
+  .rise {
+    opacity: 1 !important;
+    transform: none !important;
+    box-shadow: 9px 9px 0 var(--color-ink);
+  }
+  .place-tall {
+    box-shadow: 16px 16px 0 var(--color-ink);
+  }
+}
