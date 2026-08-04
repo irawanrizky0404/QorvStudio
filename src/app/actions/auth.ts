@@ -9,6 +9,8 @@ import { loginSchema } from '@/lib/schemas/user';
 export interface LoginResult {
   ok: boolean;
   message?: string;
+  /** Tujuan setelah berhasil. Perpindahannya dilakukan klien, lihat `login`. */
+  to?: string;
 }
 
 /**
@@ -59,7 +61,20 @@ export async function login(raw: unknown): Promise<LoginResult> {
 
   await startSession(user.id);
   attempts.delete(email);
-  redirect(safeRedirect(parsed.data.from));
+
+  /*
+   * Tujuannya dikembalikan, bukan `redirect()`.
+   *
+   * `redirect()` bekerja dengan melempar. Di Server Action, lemparan itu ikut
+   * menolak promise yang ditunggu klien, jadi `try/catch` di formulir menangkap
+   * keberhasilan dan menampilkannya sebagai kegagalan — persis yang terjadi:
+   * kredensial benar, sesi terbentuk, tapi yang terbaca operator adalah pesan
+   * galat.
+   *
+   * Membiarkan klien yang berpindah menghapus seluruh kelas masalah itu: jalur
+   * berhasil dan jalur gagal sama-sama kembali sebagai nilai biasa.
+   */
+  return { ok: true, to: safeRedirect(parsed.data.from) };
 }
 
 export async function logout(): Promise<void> {

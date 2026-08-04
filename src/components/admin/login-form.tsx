@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
 
 import { login } from '@/app/actions/auth';
 import { Button } from '@/components/ui/button';
@@ -21,6 +22,7 @@ import { Card } from '@/components/ui/primitives';
  * bahwa alamat yang dimasukkan ternyata terdaftar.
  */
 export function LoginForm({ from }: { from: string }): ReactNode {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -31,9 +33,17 @@ export function LoginForm({ from }: { from: string }): ReactNode {
     setPending(true);
     setError(null);
     try {
-      // Kredensial yang benar melakukan redirect, jadi hanya jalur gagal
-      // yang kembali ke sini.
       const result = await login({ email, password, from });
+
+      if (result.ok && result.to) {
+        /* Perpindahan dilakukan di sini, bukan lewat `redirect()` di action —
+         * lihat catatan di `app/actions/auth.ts`. `refresh()` menyusul supaya
+         * layout panel dirender ulang dengan sesi yang baru. */
+        router.replace(result.to);
+        router.refresh();
+        return;
+      }
+
       setError(result.message ?? 'Gagal masuk.');
     } catch {
       // Action yang ditolak tetap harus melepas tombol, atau formulirnya macet.

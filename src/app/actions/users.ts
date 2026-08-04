@@ -35,26 +35,61 @@ function explain(error: unknown): string {
   return DENY[code] ?? 'Gagal menyimpan. Coba lagi.';
 }
 
-function parse(raw: unknown) {
+/**
+ * Nama kolom dalam bahasa yang dipakai formulirnya.
+ *
+ * Versi sebelumnya menjawab setiap kegagalan validasi dengan satu kalimat yang
+ * sama — "Periksa kembali isian formulir." Formulir ini punya lima kolom dan
+ * tidak melakukan validasi di klien selain `required`, jadi kalimat itu
+ * menyuruh operator menebak kolom mana yang salah.
+ */
+const FIELD: Record<string, string> = {
+  email: 'Email',
+  name: 'Nama',
+  role: 'Peran',
+  active: 'Status',
+  password: 'Password',
+};
+
+type Parsed =
+  | { ok: true; input: { email: string; name: string; role: UserRole; active: boolean; password?: string } }
+  | { ok: false; message: string };
+
+function parse(raw: unknown): Parsed {
   const parsed = userFormSchema.safeParse(raw);
-  if (!parsed.success) return null;
+
+  if (!parsed.success) {
+    const issue = parsed.error.issues[0];
+    const field = issue?.path[0];
+    const label = typeof field === 'string' ? FIELD[field] : undefined;
+    return {
+      ok: false,
+      message: label
+        ? `${label}: ${issue?.message ?? 'tidak valid.'}`
+        : 'Periksa kembali isian formulir.',
+    };
+  }
+
   return {
-    email: parsed.data.email,
-    name: parsed.data.name,
-    role: parsed.data.role as UserRole,
-    active: parsed.data.active,
-    password: parsed.data.password ? parsed.data.password : undefined,
+    ok: true,
+    input: {
+      email: parsed.data.email,
+      name: parsed.data.name,
+      role: parsed.data.role as UserRole,
+      active: parsed.data.active,
+      password: parsed.data.password ? parsed.data.password : undefined,
+    },
   };
 }
 
 export async function createUser(raw: unknown): Promise<ActionResult> {
   await requireRole('dev');
 
-  const input = parse(raw);
-  if (!input) return { ok: false, message: 'Periksa kembali isian formulir.' };
+  const parsed = parse(raw);
+  if (!parsed.ok) return { ok: false, message: parsed.message };
 
   try {
-    await userRepo.create(input);
+    await userRepo.create(parsed.input);
   } catch (error) {
     return { ok: false, message: explain(error) };
   }
@@ -66,11 +101,11 @@ export async function createUser(raw: unknown): Promise<ActionResult> {
 export async function updateUser(id: string, raw: unknown): Promise<ActionResult> {
   await requireRole('dev');
 
-  const input = parse(raw);
-  if (!input) return { ok: false, message: 'Periksa kembali isian formulir.' };
+  const parsed = parse(raw);
+  if (!parsed.ok) return { ok: false, message: parsed.message };
 
   try {
-    await userRepo.update(id, input);
+    await userRepo.update(id, parsed.input);
   } catch (error) {
     return { ok: false, message: explain(error) };
   }
