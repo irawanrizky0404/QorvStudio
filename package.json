@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "node --conditions=react-server --import tsx --test tests/unit.test.ts",
-    "verify": "npm run typecheck && npm run lint && npm run test && npm run build"
+    "verify": "npm run typecheck && npm run lint && npm run test && npm run build",
+    "logos": "node --import tsx scripts/make-logos.tsx"
   },
   "dependencies": {
     "@hookform/resolvers": "5.7.1",
