@@ -81,7 +81,11 @@ export default async function HomePage({
                 {pickLocale(settings.location, locale)} — Est. {settings.foundedYear}
               </span>
             </div>
-            <div className="rise grid gap-2 text-right">
+            {/* Rata kanan hanya setelah kedua kolomnya benar-benar bersebelahan.
+              * Di ponsel keduanya menumpuk, dan teks rata kanan yang membungkus
+              * ke baris kedua menghasilkan tepi kiri yang bergerigi — terbaca
+              * sebagai salah, bukan sebagai keselarasan. */}
+            <div className="rise grid gap-2 sm:text-right">
               <span className="label">{t.home.heroSub}</span>
               <span className="label">{disciplines.slice(0, 3).join(' · ')}</span>
             </div>
@@ -260,7 +264,7 @@ export default async function HomePage({
                 </div>
                 <Link
                   href={routes.service(locale, service.slug)}
-                  className="label underline decoration-3 underline-offset-4 hover:text-ink focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-ink"
+                  className="label inline-flex w-fit items-center underline decoration-3 underline-offset-4 pointer-coarse:min-h-11 hover:text-ink focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-ink"
                 >
                   {t.common.viewService}
                 </Link>

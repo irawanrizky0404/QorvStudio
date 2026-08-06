@@ -90,12 +90,26 @@ export default async function LocaleLayout({
 
   return (
     <html lang={typed} className={`${grotesk.variable} ${jakarta.variable}`}>
+      {/*
+        * Dirender langsung, bukan lewat `export const viewport`.
+        *
+        * Situs ini tidak punya `app/layout.tsx` — ada dua root layout, satu per
+        * route group — dan export `viewport` dari layout bersarang masuk ke HTML
+        * pra-render tapi tidak pernah sampai ke halaman yang dilayani. Persoalan
+        * yang sama dengan `og:image`. React 19 mengangkat `<meta>` yang dirender
+        * ke `<head>`, jadi jalur ini bekerja di kedua kasus.
+        *
+        * Tanpa ini, bilah alamat Chrome dan Safari memakai warna bawaan sistem
+        * yang bertemu langsung dengan kertas #E9E9E3 di tepi atas layar.
+        */}
+      <meta name="theme-color" content="#e9e9e3" />
+      <meta name="color-scheme" content="light" />
       <body className="antialiased">
         <DictionaryProvider dictionary={dictionary} locale={typed}>
           <SmoothScroll>
             <a
               href="#main"
-              className="sr-only focus:not-sr-only focus:fixed focus:left-6 focus:top-6 focus:z-[200] focus:focus:bg-acid focus:px-5 focus:py-3 focus:text-sm focus:text-void"
+              className="sr-only focus:not-sr-only focus:fixed focus:left-6 focus:top-6 focus:z-[200] focus:border-3 focus:border-ink focus:bg-acid focus:px-5 focus:py-3 focus:text-sm focus:text-ink"
             >
               {dictionary.nav.skipToContent}
             </a>

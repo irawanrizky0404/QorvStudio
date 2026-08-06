@@ -162,7 +162,11 @@ function LocaleSwitch({
             hrefLang={option}
             aria-current={option === locale ? 'true' : undefined}
             className={cn(
+              /* `pointer-coarse:` menaikkan area sentuhnya ke sekitar 44px tanpa
+               * mengubah apa pun di layar bermouse. Pada ponsel, EN/ID cuma
+               * 19x27 px — lebih kecil dari ujung jari. */
               'label inline-flex items-center gap-1.5 py-2 transition-colors duration-150',
+              'pointer-coarse:min-h-11 pointer-coarse:px-2 pointer-coarse:py-3',
               'focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ink',
               option === locale ? 'text-ink' : 'text-ink-soft hover:text-ink',
             )}

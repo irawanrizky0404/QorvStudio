@@ -112,7 +112,7 @@ export default async function PricingPage({
                     </div>
                     <Link
                       href={routes.service(locale, service.slug)}
-                      className="label text-ink underline decoration-acid decoration-[3px] underline-offset-4 transition-colors duration-150 hover:decoration-ink focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ink"
+                      className="inline-flex w-fit items-center label text-ink underline decoration-ink decoration-[3px] underline-offset-4 transition-[text-decoration-thickness] duration-150 pointer-coarse:min-h-11 hover:decoration-[5px] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ink"
                     >
                       {t.common.viewService}
                     </Link>
@@ -170,7 +170,7 @@ export default async function PricingPage({
                     <div className="flex flex-wrap items-baseline gap-3">
                       <Link
                         href={routes.product(locale, product.slug)}
-                        className="display rank-4 underline decoration-acid decoration-[3px] underline-offset-4 transition-colors duration-150 hover:decoration-ink focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ink"
+                        className="inline-flex w-fit items-center display rank-4 underline decoration-ink decoration-[3px] underline-offset-4 transition-[text-decoration-thickness] duration-150 pointer-coarse:min-h-11 hover:decoration-[5px] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ink"
                       >
                         {name}
                       </Link>

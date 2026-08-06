@@ -95,7 +95,7 @@ export function Footer({
             <div className="grid gap-2">
               <a
                 href={`mailto:${email}`}
-                className="text-sm text-ink underline decoration-acid decoration-[3px] underline-offset-4 transition-colors duration-150 hover:decoration-ink focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ink"
+                className="inline-flex w-fit items-center text-sm text-ink underline decoration-ink decoration-[3px] underline-offset-4 transition-[text-decoration-thickness] duration-150 pointer-coarse:min-h-11 hover:decoration-[5px] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ink"
               >
                 {email}
               </a>
@@ -103,7 +103,7 @@ export function Footer({
                 href={`https://wa.me/${whatsapp}`}
                 target="_blank"
                 rel="noreferrer noopener"
-                className="text-sm text-ink underline decoration-acid decoration-[3px] underline-offset-4 transition-colors duration-150 hover:decoration-ink focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ink"
+                className="inline-flex w-fit items-center text-sm text-ink underline decoration-ink decoration-[3px] underline-offset-4 transition-[text-decoration-thickness] duration-150 pointer-coarse:min-h-11 hover:decoration-[5px] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ink"
               >
                 +{whatsapp}
               </a>
@@ -119,7 +119,7 @@ export function Footer({
                     href={social.url}
                     target="_blank"
                     rel="noreferrer noopener"
-                    className="text-sm text-ink-soft transition-colors duration-150 hover:text-ink focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ink"
+                    className="inline-flex w-fit items-center text-sm text-ink-soft transition-colors duration-150 pointer-coarse:min-h-11 hover:text-ink focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ink"
                   >
                     {social.platform}
                   </a>

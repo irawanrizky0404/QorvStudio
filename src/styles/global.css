@@ -254,14 +254,33 @@
 
   /* Baris judul: tercetak dari bawah, bukan memudar. Fade membuat tipografi
      berat terlihat ragu; mask membuatnya terlihat dicetak. */
+  /*
+   * Kotak klip diperbesar ke atas dan ke bawah, lalu ditarik kembali dengan
+   * margin negatif yang sama besar.
+   *
+   * Tanpa ini, mask memotong hurufnya sendiri. `rank-1` memakai `line-height:
+   * 0.86`, sementara kotak glyph Space Grotesk kira-kira 1.23em — ascender dan
+   * descender menonjol sekitar 0.19em di luar kotak baris di kedua sisi, dan
+   * `overflow: hidden` memangkasnya. Yang terlihat: ekor "g" pada "Merancang"
+   * hilang, dan setiap judul yang membungkus ke baris kedua terpotong rata.
+   *
+   * Margin negatifnya membuat ritme vertikal tidak berubah sedikit pun; yang
+   * berubah hanya seberapa besar area yang boleh terlihat.
+   */
   .line-mask {
     display: block;
     overflow: hidden;
-    padding-bottom: 0.06em;
+    padding-block: 0.22em;
+    margin-block: -0.22em;
   }
+  /*
+   * 140%, bukan 102%: jaraknya harus melebihi tinggi baris DITAMBAH padding
+   * bawah yang baru, kalau tidak huruf yang seharusnya tersembunyi mengintip di
+   * area padding sebelum animasinya jalan.
+   */
   .line-mask > span {
     display: block;
-    transform: translateY(102%);
+    transform: translateY(140%);
   }
   [data-in] .line-mask > span {
     transform: translateY(0);

@@ -23,7 +23,19 @@ export function Container({
   className?: string;
 }): ReactNode {
   return (
-    <div className={cn('mx-auto w-full max-w-[1560px] px-4 md:px-8 lg:px-12', className)}>
+    /*
+     * Padding sisi mengambil yang lebih besar antara jarak desain dan area aman
+     * perangkat. Dengan `viewportFit: 'cover'`, halaman mengisi sampai ke balik
+     * notch — di lanskap iPhone, tepi kiri layar ada di bawah notch, dan tanpa
+     * ini baris teks pertama tersembunyi di sana.
+     */
+    <div
+      className={cn(
+        'mx-auto w-full max-w-[1560px]',
+        'px-[max(1rem,env(safe-area-inset-left))] md:px-[max(2rem,env(safe-area-inset-left))] lg:px-[max(3rem,env(safe-area-inset-left))]',
+        className,
+      )}
+    >
       {children}
     </div>
   );
