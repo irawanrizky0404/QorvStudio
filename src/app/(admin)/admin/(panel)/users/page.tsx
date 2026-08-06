@@ -34,7 +34,7 @@ export default async function UsersPage(): Promise<ReactNode> {
         </Button>
       </div>
 
-      <ul className="mt-8 grid gap-[3px] border-3 border-ink bg-ink">
+      <ul className="mt-8 grid gap-[3px] border-3 border-ink ruled">
         {users.map((user) => (
           <li
             key={user.id}

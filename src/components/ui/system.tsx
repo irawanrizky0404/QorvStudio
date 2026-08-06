@@ -114,7 +114,7 @@ export function FilterBar({
   ariaLabel: string;
 }): ReactNode {
   return (
-    <nav aria-label={ariaLabel} className="flex flex-wrap gap-[3px] border-3 border-ink bg-ink">
+    <nav aria-label={ariaLabel} className="flex flex-wrap gap-[3px] border-3 border-ink ruled">
       {items.map((item) => (
         <Link
           key={item.href}

@@ -89,7 +89,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
         aria-describedby={describedBy(error, hint, `${fid}-e`, `${fid}-h`)}
         className={cn(CONTROL, 'appearance-none pr-10')} {...props}>
         {placeholder ? <option value="" disabled>{placeholder}</option> : null}
-        {options.map((o) => <option key={o.value} value={o.value} className="bg-ink">{o.label}</option>)}
+        {options.map((o) => <option key={o.value} value={o.value} className="bg-paper text-ink">{o.label}</option>)}
       </select>
     </Shell>
   );

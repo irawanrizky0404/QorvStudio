@@ -125,7 +125,7 @@ export default async function ProjectDetailPage({
       </Container>
 
       <Container className="mt-14">
-        <dl className="grid gap-[3px] border-3 border-ink bg-ink sm:grid-cols-2 lg:grid-cols-4">
+        <dl className="grid gap-[3px] border-3 border-ink ruled sm:grid-cols-2 lg:grid-cols-4">
           {facts.map((fact) => (
             <div key={fact.label} className="bg-paper p-7">
               <dt className="text-[13px] text-ink-soft">{fact.label}</dt>
@@ -210,7 +210,7 @@ export default async function ProjectDetailPage({
               *
               * Sel bergaris 3px, sama seperti Karya di beranda: satu perlakuan
               * untuk semua kisi gambar di situs ini. */}
-            <div className="mt-12 grid gap-[3px] border-3 border-ink bg-ink sm:grid-cols-2">
+            <div className="mt-12 grid gap-[3px] border-3 border-ink ruled sm:grid-cols-2">
               {project.gallery.map((media, i) => (
                 <div key={i} className="bg-paper">
                   <Media

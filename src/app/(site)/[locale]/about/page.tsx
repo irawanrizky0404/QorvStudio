@@ -72,7 +72,7 @@ export default async function AboutPage({
 
       <Reveal as="div">
         <Block label={t.about.capabilities} title={[t.about.capabilities]} body={t.services.subtitle}>
-          <div className="grid gap-[3px] border-3 border-ink bg-ink sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-[3px] border-3 border-ink ruled sm:grid-cols-2 lg:grid-cols-3">
             {services.items.map((service, position) => (
               <div key={service.id} className="flex flex-col gap-3 bg-paper p-7">
                 <span className="label tabular">{String(position + 1).padStart(2, '0')}</span>
@@ -88,7 +88,7 @@ export default async function AboutPage({
 
       <Reveal as="div">
         <Block label={t.about.process} title={[t.about.process]} body={t.home.whyBody}>
-          <div className="grid gap-[3px] border-3 border-ink bg-ink sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-[3px] border-3 border-ink ruled sm:grid-cols-2 lg:grid-cols-3">
             {t.home.reasons.map((reason) => (
               <div key={reason.title} className="flex flex-col gap-3 bg-paper p-7">
                 <span className="display rank-4 inline-flex size-9 items-center justify-center bg-acid">

@@ -66,7 +66,7 @@ export function Footer({
           lebar dari situsnya sendiri. Grid ini duduk di `Container` yang sama
           dengan hero, Karya, dan Produk. */}
       <Container className="py-14">
-        <div className="grid grid-cols-2 gap-[3px] border-3 border-ink bg-ink md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-[3px] border-3 border-ink ruled md:grid-cols-4">
           {/* ── Baris 1 — indeks bernomor, sama dengan penomoran section ─────── */}
           {index.map((item, position) => (
             <Link
@@ -128,13 +128,21 @@ export function Footer({
             </ul>
           </div>
 
-          {/* Satu-satunya bidang acid di footer, dan ia membawa ajakan utamanya. */}
+          {/* Satu-satunya bidang acid di footer, dan ia membawa ajakan utamanya.
+            *
+            * `group-hover` pada anaknya, bukan hanya `hover:text-paper` pada
+            * induknya: `.display` menetapkan `color` sendiri, jadi ia tidak ikut
+            * mewarisi. Saat latar berbalik jadi tinta, teks utamanya tetap tinta
+            * — hitam di atas hitam, dan ajakan yang paling penting di footer
+            * justru menghilang tepat saat kursor menyentuhnya. */}
           <Link
             href={routes.contact(locale)}
-            className="col-span-2 flex min-h-[9.5rem] flex-col justify-between bg-acid p-6 transition-colors duration-150 hover:bg-ink hover:text-paper focus-visible:outline-3 focus-visible:-outline-offset-3 focus-visible:outline-ink md:col-span-1"
+            className="group col-span-2 flex min-h-[9.5rem] flex-col justify-between bg-acid p-6 transition-colors duration-150 hover:bg-ink hover:text-paper focus-visible:outline-3 focus-visible:-outline-offset-3 focus-visible:outline-ink md:col-span-1"
           >
             <span className="label">{t.home.faqLead}</span>
-            <span className="display rank-4">{t.home.ctaButton}</span>
+            <span className="display rank-4 transition-colors duration-150 group-hover:text-paper">
+              {t.home.ctaButton}
+            </span>
           </Link>
         </div>
       </Container>

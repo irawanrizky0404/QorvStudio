@@ -106,7 +106,7 @@ export function EntityTable({
           action={rows.length === 0 ? emptyAction : undefined}
         />
       ) : (
-        <ul className="grid gap-[3px] border-3 border-ink bg-ink">
+        <ul className="grid gap-[3px] border-3 border-ink ruled">
           {visible.map((row) => (
             <li
               key={row.id}

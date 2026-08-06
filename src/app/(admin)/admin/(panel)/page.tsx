@@ -194,7 +194,7 @@ export default async function DashboardPage(): Promise<ReactNode> {
         * Dibuka di tab baru, bukan menggantikan panel: operator biasanya membuka
         * ini sambil menyunting konten, bukan sebagai tujuan akhir.
         */}
-      <div className="grid shrink-0 gap-[3px] border-3 border-ink bg-ink sm:grid-cols-2">
+      <div className="grid shrink-0 gap-[3px] border-3 border-ink ruled sm:grid-cols-2">
         {[
           {
             href: '/docs/web_design_system.html',

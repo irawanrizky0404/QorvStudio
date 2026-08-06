@@ -273,6 +273,31 @@
    * Margin negatifnya membuat ritme vertikal tidak berubah sedikit pun; yang
    * berubah hanya seberapa besar area yang boleh terlihat.
    */
+  /*
+   * Kisi bergaris — garisnya digambar SEL, bukan latar di belakangnya.
+   *
+   * Cara lama: wadahnya `bg-ink`, dan tinta itu terlihat lewat celah 3px antar
+   * sel. Bekerja hanya kalau jumlah sel kebetulan pas dengan jumlah kolom.
+   * Begitu tidak — tiga spesifikasi di dua kolom, lima gambar galeri di dua
+   * kolom, empat fitur di tiga kolom — petak sisa di baris terakhir kosong dan
+   * yang tampil adalah **blok hitam pekat sebesar satu sel**. Bentuk itu tidak
+   * ada di sistem ini, dan ia muncul di hampir setiap tabel.
+   *
+   * Sekarang wadahnya kertas dan tiap sel memancarkan cincin tinta 3px. Cincin
+   * dua sel bertetangga jatuh di celah yang sama sehingga tetap terbaca satu
+   * garis; cincin sel tepi jatuh tepat di atas bingkai wadahnya. Petak kosong
+   * tinggal kertas.
+   *
+   * `box-shadow`, bukan `border`: bayangan tidak menempati ruang, jadi tidak ada
+   * satupun ukuran yang bergeser.
+   */
+  .ruled {
+    background-color: var(--color-paper);
+  }
+  .ruled > * {
+    box-shadow: 0 0 0 3px var(--color-ink);
+  }
+
   .line-mask {
     display: block;
     overflow: hidden;

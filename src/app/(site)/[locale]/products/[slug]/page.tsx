@@ -248,7 +248,7 @@ export default async function ProductDetailPage({
         <Section bordered>
           <Container>
             <SectionIntro lead={t.products.gallery} align="left" />
-            <div className="mt-12 grid gap-[3px] border-3 border-ink bg-ink sm:grid-cols-2">
+            <div className="mt-12 grid gap-[3px] border-3 border-ink ruled sm:grid-cols-2">
               {product.gallery.map((media, i) => (
                 <div key={i} className="bg-paper">
                   <Media

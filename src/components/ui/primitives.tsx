@@ -226,7 +226,12 @@ export function Tag({
   );
 }
 
-/** Grid bersel: sel kertas dipisah garis tinta, dibingkai penuh. */
+/**
+ * Grid bersel: sel kertas dipisah garis tinta, dibingkai penuh.
+ *
+ * Garisnya milik selnya lewat utilitas `.ruled` — lihat global.css untuk alasan
+ * garisnya tidak lagi datang dari latar tinta di belakang grid.
+ */
 export function RuledGrid({
   children,
   columns = 4,
@@ -244,7 +249,9 @@ export function RuledGrid({
         : 'sm:grid-cols-2 lg:grid-cols-4';
 
   return (
-    <div className={cn('grid gap-[3px] border-3 border-ink bg-ink', cols, className)}>{children}</div>
+    <div className={cn('grid gap-[3px] border-3 border-ink ruled', cols, className)}>
+      {children}
+    </div>
   );
 }
 
@@ -255,5 +262,6 @@ export function RuledCell({
   children: ReactNode;
   className?: string;
 }): ReactNode {
+  /* Cincin tintanya datang dari `.ruled > *` di wadahnya — lihat global.css. */
   return <div className={cn('bg-paper p-7', className)}>{children}</div>;
 }

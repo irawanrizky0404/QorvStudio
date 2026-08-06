@@ -83,7 +83,7 @@ export function UserForm({ user }: { user?: SafeUser }): ReactNode {
 
       <fieldset>
         <legend className="label">Peran</legend>
-        <div className="mt-2 grid grid-cols-2 gap-[3px] border-3 border-ink bg-ink">
+        <div className="mt-2 grid grid-cols-2 gap-[3px] border-3 border-ink ruled">
           {USER_ROLES.map((value) => (
             <button
               key={value}
@@ -107,7 +107,7 @@ export function UserForm({ user }: { user?: SafeUser }): ReactNode {
 
       <fieldset>
         <legend className="label">Status</legend>
-        <div className="mt-2 grid grid-cols-2 gap-[3px] border-3 border-ink bg-ink">
+        <div className="mt-2 grid grid-cols-2 gap-[3px] border-3 border-ink ruled">
           {[true, false].map((value) => (
             <button
               key={String(value)}

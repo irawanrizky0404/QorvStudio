@@ -197,7 +197,7 @@ export function InquiryForm({
             sementara sel di baris pertama tetap sempit, jadi kolomnya tidak
             pernah berbaris dan labelnya saling bertindih saat teksnya panjang.
             Grid memberi setiap pilihan lebar yang sama, di lebar layar manapun. */}
-        <div className="mt-2 grid grid-cols-2 gap-[3px] border-3 border-ink bg-ink sm:grid-cols-3 lg:grid-cols-5">
+        <div className="mt-2 grid grid-cols-2 gap-[3px] border-3 border-ink ruled sm:grid-cols-3 lg:grid-cols-5">
           {BUDGETS.map((value) => {
             const active = budget === value;
             return (

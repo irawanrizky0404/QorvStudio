@@ -8,11 +8,14 @@ import { getDictionary } from '@/lib/i18n/get-dictionary';
 import { pickLocale } from '@/lib/i18n/pick-locale';
 import { getPricingView } from '@/lib/repo';
 import { routes } from '@/lib/routes';
+import { formatPriceCompact } from '@/lib/format';
+import { cn } from '@/lib/utils';
+import { EMPHASIZED_TIER, TIERS } from '@/types/content';
 import type { Locale } from '@/types/content';
 
 import { Reveal } from '@/components/motion/reveal';
 import { Accordion } from '@/components/ui/accordion';
-import { Price, TierCard } from '@/components/pricing/price';
+import { Price } from '@/components/pricing/price';
 import { InquiryDialog } from '@/components/inquiry/inquiry-dialog';
 import { Container } from '@/components/ui/primitives';
 import { Block, PageHead, Printed } from '@/components/ui/system';
@@ -97,70 +100,133 @@ export default async function PricingPage({
     <>
       <PageHead label={t.nav.pricing} title={t.pricing.title} body={t.pricing.subtitle} />
 
-      {/* Service packages, grouped per service */}
+      {/*
+        * Satu matriks, bukan 18 kartu.
+        *
+        * Versi sebelumnya menumpuk enam layanan × tiga tingkat sebagai kartu
+        * penuh — 18 kotak besar berurutan. Isinya banyak, tapi tidak satupun
+        * pertanyaan yang dibawa orang ke halaman harga bisa dijawab tanpa
+        * menggulir jauh dan mengingat-ingat: berapa layanan ini, dan bagaimana
+        * dibanding yang lain. Membandingkan justru tidak mungkin, karena dua
+        * angka yang mau dibandingkan tidak pernah ada di layar bersamaan.
+        *
+        * Tabel ini menaruh ke-18 angka dalam satu pandangan. Rincian tiap
+        * paket — apa saja yang termasuk — tetap ada di halaman layanannya, satu
+        * klik dari sel manapun, dan di sana kartunya memang sudah sebaris rapi.
+        *
+        * `<table>` sungguhan, bukan grid div: ini memang data tabular, dan
+        * pembaca layar mengumumkan header baris dan kolomnya.
+        */}
       <Reveal as="div">
-        <Block label={t.pricing.servicesHeading} title={[t.pricing.servicesHeading]} body={t.home.capabilitiesBody}>
-          <div className="flex flex-col gap-16">
-            {services.map((service) => {
-              const name = pickLocale(service.name, locale);
-              return (
-                <div key={service.id}>
-                  <div className="flex flex-wrap items-end justify-between gap-5 border-b-3 border-ink pb-5">
-                    <div>
-                      <h3 className="display rank-3">{name}</h3>
-                      <p className="mt-3 text-[15px]">{pickLocale(service.tagline, locale)}</p>
-                    </div>
-                    <Link
-                      href={routes.service(locale, service.slug)}
-                      className="inline-flex w-fit items-center label text-ink underline decoration-ink decoration-[3px] underline-offset-4 transition-[text-decoration-thickness] duration-150 pointer-coarse:min-h-11 hover:decoration-[5px] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ink"
+        <Block
+          label={t.pricing.servicesHeading}
+          title={[t.pricing.servicesHeading]}
+          body={t.pricing.matrixBody}
+        >
+          <div className="overflow-x-auto border-3 border-ink">
+            <table className="w-full min-w-[42rem] border-collapse text-left">
+              {/*
+                * Header tanpa blok tinta.
+                *
+                * Bidang hitam penuh selebar tabel adalah bentuk yang tidak muncul
+                * di halaman manapun; ia memotong halaman jadi dua alih-alih
+                * menyambung. Yang dipakai di sini bahasa yang sudah ada:
+                * kertas, `.label` tinta, dan satu garis 3px sebagai pemisah.
+                *
+                * Kolom yang direkomendasikan diberi pita acid MENERUS dari header
+                * sampai baris terakhir. Satu bidang tegak, bukan sel-sel terpisah:
+                * jawabannya terbaca sebelum satu angka pun dibaca.
+                */}
+              <thead>
+                <tr className="border-b-3 border-ink">
+                  <th scope="col" className="label px-6 py-4 text-ink-soft">
+                    {t.pricing.service}
+                  </th>
+                  {TIERS.map((tier) => (
+                    <th
+                      key={tier}
+                      scope="col"
+                      className={cn(
+                        'label px-6 py-4 text-ink',
+                        tier === EMPHASIZED_TIER && 'bg-acid',
+                      )}
                     >
-                      {t.common.viewService}
-                    </Link>
-                  </div>
+                      {t.pricing.tier[tier]}
+                      {tier === EMPHASIZED_TIER ? (
+                        <span className="ml-2 normal-case tracking-normal">
+                          · {t.pricing.recommended}
+                        </span>
+                      ) : null}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {services.map((service) => {
+                  const name = pickLocale(service.name, locale);
+                  const byTier = new Map(service.packages.map((p) => [p.tier, p]));
 
-                  {service.packages.length === 0 ? (
-                    /* Quote-only services are shown, not hidden: the offering exists. */
-                    <div className="mt-7 flex flex-wrap items-center justify-between gap-6 border-3 border-ink bg-paper p-7 shadow-[9px_9px_0_var(--color-ink)]">
-                      <p className="max-w-lg text-[15px] leading-relaxed">
-                        {pickLocale(service.description, locale).split('\n\n')[0]}
-                      </p>
-                      <InquiryDialog
-                        label={t.pricing.requestQuote}
-                        sourceType="pricing"
-                        sourceId={service.id}
-                        contextLabel={t.inquiry.contextService}
-                        contextValue={name}
-                        variant="outline"
-                      />
-                    </div>
-                  ) : (
-                    /* Selalu tiga kolom. Setiap layanan kini punya tangga
-                       Basic/Gold/Premium yang lengkap di data, jadi tidak ada
-                       lagi baris yang menyisakan sel kosong di ujungnya. */
-                    <div className="mt-7 grid gap-6 lg:grid-cols-3 lg:grid-rows-[auto_auto_auto_1fr_auto]">
-                      {service.packages.map((tier) => (
-                        <TierCard
-                          key={tier.tier}
-                          tier={tier}
-                          locale={locale}
-                          t={t}
-                          serviceId={service.id}
-                          serviceName={name}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                  return (
+                    <tr key={service.id} className="border-t-3 border-ink bg-paper">
+                      <th scope="row" className="px-6 py-5 align-top font-normal">
+                        <Link
+                          href={routes.service(locale, service.slug)}
+                          className="display rank-5 inline-flex w-fit items-center text-ink decoration-ink decoration-[3px] underline-offset-4 transition-[text-decoration-thickness] duration-150 pointer-coarse:min-h-11 hover:underline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ink"
+                        >
+                          {name}
+                        </Link>
+                        <span className="mt-2 block max-w-[26ch] text-[13.5px] leading-relaxed text-ink-soft">
+                          {pickLocale(service.tagline, locale)}
+                        </span>
+                      </th>
+
+                      {TIERS.map((tier) => {
+                        const pkg = byTier.get(tier);
+                        return (
+                          <td
+                            key={tier}
+                            className={cn(
+                              'px-6 py-5 align-top',
+                              /* Kolom yang direkomendasikan diberi bidang, bukan
+                               * warna teks — aturan yang sama di seluruh situs. */
+                              tier === EMPHASIZED_TIER && 'bg-acid',
+                            )}
+                          >
+                            {pkg ? (
+                              <>
+                                <span className="display tabular rank-5 block text-ink">
+                                  {formatPriceCompact(
+                                    pkg.price,
+                                    pkg.currency,
+                                    locale,
+                                    t.pricing.contactUs,
+                                  )}
+                                </span>
+                                <span className="label mt-1.5 block text-ink-soft">
+                                  {t.pricing.period[pkg.period]}
+                                </span>
+                              </>
+                            ) : (
+                              <span className="text-[14px] text-ink-soft">—</span>
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
+
+          <p className="mt-5 text-[14px] text-ink-soft">{t.pricing.seeDetail} →</p>
         </Block>
       </Reveal>
 
       {/* Product licensing: one indicative price each, no tiers */}
       <Reveal as="div">
         <Block label={t.pricing.productsHeading} title={[t.pricing.productsHeading]} body={t.products.subtitle}>
-          <ul className="grid gap-[3px] border-3 border-ink bg-ink">
+          <ul className="grid gap-[3px] border-3 border-ink ruled">
             {products.map((product) => {
               const name = pickLocale(product.name, locale);
               const note = pickLocale(product.price.note, locale);

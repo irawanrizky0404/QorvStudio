@@ -75,7 +75,7 @@ export default async function ContactPage({
         */}
       <Reveal as="section" className="band pt-0">
         <Container>
-          <ul className="grid gap-[3px] border-3 border-ink bg-ink sm:grid-cols-2 lg:grid-cols-4">
+          <ul className="grid gap-[3px] border-3 border-ink ruled sm:grid-cols-2 lg:grid-cols-4">
             <li className="flex">
               <a
                 href={`mailto:${settings.email}`}

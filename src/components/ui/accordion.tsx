@@ -25,7 +25,7 @@ export function Accordion({
   if (items.length === 0) return null;
 
   return (
-    <RadixAccordion.Root type="single" collapsible className={cn('grid gap-[3px] border-3 border-ink bg-ink', className)}>
+    <RadixAccordion.Root type="single" collapsible className={cn('grid gap-[3px] border-3 border-ink ruled', className)}>
       {items.map((item, index) => (
         <RadixAccordion.Item
           key={item.id}

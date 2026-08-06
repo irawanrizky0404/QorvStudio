@@ -116,7 +116,7 @@ export default async function HomePage({
             </div>
           </div>
 
-          <dl className="mt-14 grid grid-cols-2 gap-[3px] border-3 border-ink bg-ink md:grid-cols-4">
+          <dl className="mt-14 grid grid-cols-2 gap-[3px] border-3 border-ink ruled md:grid-cols-4">
             {stats.map((stat, position) => (
               <div
                 key={stat.label}
@@ -273,7 +273,7 @@ export default async function HomePage({
           </ul>
 
           {rest.length > 0 ? (
-            <ul className="place mt-5 grid gap-[3px] border-3 border-ink bg-ink">
+            <ul className="place mt-5 grid gap-[3px] border-3 border-ink ruled">
               {rest.map((service, position) => (
                 <li key={service.id}>
                   <Link
@@ -382,7 +382,7 @@ export default async function HomePage({
             title={[t.about.process]}
             body={t.home.processTrail}
           >
-            <ol className="grid gap-[3px] border-3 border-ink bg-ink sm:grid-cols-2 lg:grid-cols-4">
+            <ol className="grid gap-[3px] border-3 border-ink ruled sm:grid-cols-2 lg:grid-cols-4">
               {steps.map((step) => (
                 <li key={step.id} className="flex flex-col gap-3 bg-paper p-7">
                   <span className="display tabular rank-4 inline-flex size-11 items-center justify-center bg-acid">
