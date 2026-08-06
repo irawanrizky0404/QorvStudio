@@ -95,13 +95,13 @@ export default async function ServiceDetailPage({
             <h1 className="display mt-8 text-[clamp(2.25rem,5vw,4.25rem)] text-ink">
               {name}
             </h1>
-            <p className="mt-6 max-w-xl text-[15px] leading-relaxed text-muted">
+            <p className="mt-6 max-w-xl text-[15px] leading-relaxed text-ink-soft">
               {pickLocale(service.tagline, locale)}
             </p>
 
             <div className="mt-10 flex flex-wrap items-end gap-x-12 gap-y-6">
               <div>
-                <p className="text-[13px] text-faint">{t.services.startingFrom}</p>
+                <p className="text-[13px] text-ink-soft">{t.services.startingFrom}</p>
                 <Price
                   amount={service.startingPrice}
                   currency={service.currency}
@@ -111,7 +111,7 @@ export default async function ServiceDetailPage({
                 />
               </div>
               <div>
-                <p className="text-[13px] text-faint">{t.services.typicalTimeline}</p>
+                <p className="text-[13px] text-ink-soft">{t.services.typicalTimeline}</p>
                 <p className="display mt-2 text-2xl text-ink">
                   {pickLocale(service.timelineLabel, locale)}
                 </p>
@@ -148,7 +148,7 @@ export default async function ServiceDetailPage({
             {pickLocale(service.description, locale)
               .split('\n\n')
               .map((paragraph, i) => (
-                <p key={i} className="mb-5 text-[15px] leading-relaxed text-muted">
+                <p key={i} className="mb-5 text-[15px] leading-relaxed text-ink-soft">
                   {paragraph}
                 </p>
               ))}
@@ -156,7 +156,7 @@ export default async function ServiceDetailPage({
 
           {deliverables.length > 0 ? (
             <Card className="lg:col-span-5">
-              <h2 className="text-[13px] text-faint">{t.services.deliverables}</h2>
+              <h2 className="text-[13px] text-ink-soft">{t.services.deliverables}</h2>
               <ul className="mt-6 space-y-4">
                 {deliverables.map((item, i) => (
                   <li key={i} className="flex gap-3 text-sm leading-relaxed text-ink">
@@ -185,10 +185,10 @@ export default async function ServiceDetailPage({
                     <h3 className="display mt-6 text-lg text-ink">
                       {pickLocale(step.title, locale)}
                     </h3>
-                    <p className="mt-3 text-sm leading-relaxed text-muted">
+                    <p className="mt-3 text-sm leading-relaxed text-ink-soft">
                       {pickLocale(step.description, locale)}
                     </p>
-                    <p className="mt-5 text-[13px] text-faint">
+                    <p className="mt-5 text-[13px] text-ink-soft">
                       {pickLocale(step.durationLabel, locale)}
                     </p>
                   </RuledCell>
@@ -209,7 +209,7 @@ export default async function ServiceDetailPage({
               <h3 className="display text-2xl text-ink">
                 {t.pricing.requestQuote}
               </h3>
-              <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-muted">
+              <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-ink-soft">
                 {pickLocale(service.description, locale).split('\n\n')[0]}
               </p>
               <div className="mt-8 flex justify-center">
@@ -223,7 +223,10 @@ export default async function ServiceDetailPage({
               </div>
             </Card>
           ) : (
-            <Reveal stagger={0.08} className="mt-14 grid gap-8 lg:grid-cols-3">
+            <Reveal
+              stagger={0.08}
+              className="mt-14 grid gap-8 lg:grid-cols-3 lg:grid-rows-[auto_auto_auto_1fr_auto]"
+            >
               {service.packages.map((tier) => (
                 <TierCard
                   key={tier.tier}
@@ -278,7 +281,7 @@ export default async function ServiceDetailPage({
                   <h3 className="display mt-6 text-2xl text-ink transition-colors decoration-[3px] underline-offset-4 group-hover:underline">
                     {pickLocale(project.title, locale)}
                   </h3>
-                  <p className="mt-2 text-[13px] text-faint">
+                  <p className="mt-2 text-[13px] text-ink-soft">
                     {project.client}, {project.year}
                   </p>
                 </Link>
@@ -321,7 +324,7 @@ export default async function ServiceDetailPage({
                         <h3 className="display text-xl text-ink transition-colors decoration-[3px] underline-offset-4 group-hover:underline">
                           {pickLocale(item.name, locale)}
                         </h3>
-                        <p className="mt-2 text-sm text-muted">
+                        <p className="mt-2 text-sm text-ink-soft">
                           {pickLocale(item.tagline, locale)}
                         </p>
                       </div>

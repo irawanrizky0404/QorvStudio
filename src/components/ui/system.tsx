@@ -103,7 +103,7 @@ export function PageHead({
 /**
  * Baris penyaring. Sel bersambung dipisah garis tinta, bukan pil mengambang —
  * pil membulat adalah bentuk yang tidak ada di sistem ini, dan versi lamanya
- * memakai `bg-ink text-muted` yang setelah palet berubah jadi hitam di atas
+ * memakai `bg-ink text-ink-soft` yang setelah palet berubah jadi hitam di atas
  * hitam.
  */
 export function FilterBar({

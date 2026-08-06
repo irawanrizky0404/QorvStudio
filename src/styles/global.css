@@ -43,16 +43,22 @@
 
   --color-danger: #d92d20;
 
-  /* ── Alias lama ─────────────────────────────────────────────────────────── */
-  /* Dipetakan ke palet baru supaya halaman yang belum dimigrasi tidak pecah.
-     `bg-void` kini kertas, `text-chrome` kini tinta. Sementara. */
-  --color-void: #e9e9e3;
-  --color-graphite: #deded6;
-  --color-chrome: #0b0b0b;
-  --color-muted: #5f5f58;
-  --color-faint: #7c7c74;
-  --color-line: #0b0b0b;
-  --color-line-strong: #0b0b0b;
+  /*
+   * Alias lama dibuang seluruhnya.
+   *
+   * Ada tujuh — void, graphite, chrome, muted, faint, line, line-strong —
+   * dipasang sementara supaya halaman yang belum dimigrasi tidak pecah. Yang
+   * terjadi justru sebaliknya: mereka pecah dengan diam.
+   *
+   * `text-chrome` bernilai tinta, jadi `bg-ink text-chrome` menghasilkan hitam
+   * di atas hitam. `text-void` bernilai kertas, jadi ia jadi kertas di atas
+   * acid. Dan `text-faint` = #7c7c74 hanya 3,45:1 di atas kertas — di bawah
+   * ambang WCAG AA, dipakai di 22 tempat, semuanya teks kecil.
+   *
+   * Semuanya sekarang menunjuk `ink`, `ink-soft`, atau `paper` secara langsung.
+   * Situs ini hanya punya dua warna teks; nama ketiga yang nyaris sama tidak
+   * menambah apa-apa selain satu cara baru untuk keliru.
+   */
 
   /* ── Tipe ───────────────────────────────────────────────────────────────── */
   --font-display: var(--font-space-grotesk), sans-serif;

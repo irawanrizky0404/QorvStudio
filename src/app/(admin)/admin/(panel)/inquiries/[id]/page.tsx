@@ -109,7 +109,7 @@ export default async function InquiryDetailPage({
 
         <Card className="lg:col-span-4">
           <h2 className="display text-xl text-ink">Details</h2>
-          <dl className="mt-6 flex flex-col divide-y divide-line">
+          <dl className="mt-6 flex flex-col divide-y divide-ink">
             {facts.map((fact) => (
               <div key={fact.label} className="flex items-baseline justify-between gap-4 py-3">
                 <dt className="text-[13px] text-ink-soft">{fact.label}</dt>

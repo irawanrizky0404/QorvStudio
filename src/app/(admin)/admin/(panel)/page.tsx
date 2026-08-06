@@ -125,7 +125,7 @@ export default async function DashboardPage(): Promise<ReactNode> {
           {inquiries.items.length === 0 ? (
             <p className="p-6 text-sm text-ink-soft">No inquiries yet.</p>
           ) : (
-            <ul className="divide-y divide-line overflow-y-auto px-6 lg:min-h-0 lg:flex-1">
+            <ul className="divide-y divide-ink overflow-y-auto px-6 lg:min-h-0 lg:flex-1">
               {inquiries.items.map((inquiry) => (
                 <li key={inquiry.id}>
                   <Link

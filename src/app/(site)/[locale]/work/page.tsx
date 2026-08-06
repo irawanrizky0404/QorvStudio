@@ -50,7 +50,7 @@ export async function generateMetadata({
  * keduanya terasa seperti dua tempat yang tidak berhubungan.
  *
  * Penyaring dipindah ke atas grid sebagai satu baris bersel bersambung, bukan
- * pil membulat mengambang. Versi lamanya `rounded-full bg-ink text-muted`, yang
+ * pil membulat mengambang. Versi lamanya `rounded-full bg-ink text-ink-soft`, yang
  * setelah palet berubah menjadi hitam di atas hitam.
  */
 export default async function WorkPage({

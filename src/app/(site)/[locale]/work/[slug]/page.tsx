@@ -92,7 +92,7 @@ export default async function ProjectDetailPage({
         <h1 className="display mt-6 max-w-4xl text-[clamp(2.25rem,5vw,4.25rem)] text-ink">
           {pickLocale(project.title, locale)}
         </h1>
-        <p className="mt-6 max-w-2xl text-[15px] leading-relaxed text-muted">
+        <p className="mt-6 max-w-2xl text-[15px] leading-relaxed text-ink-soft">
           {pickLocale(project.summary, locale)}
         </p>
         {/* Naik ke hero saat seksi CTA di bawah dibuang: ini satu-satunya tempat
@@ -128,7 +128,7 @@ export default async function ProjectDetailPage({
         <dl className="grid gap-[3px] border-3 border-ink bg-ink sm:grid-cols-2 lg:grid-cols-4">
           {facts.map((fact) => (
             <div key={fact.label} className="bg-paper p-7">
-              <dt className="text-[13px] text-faint">{fact.label}</dt>
+              <dt className="text-[13px] text-ink-soft">{fact.label}</dt>
               <dd className="display mt-3 text-lg text-ink">{fact.value}</dd>
             </div>
           ))}
@@ -141,7 +141,7 @@ export default async function ProjectDetailPage({
             {chapters.map((chapter) => (
               <Reveal key={chapter.title} variant="up">
                 <h2 className="display text-2xl text-ink">{chapter.title}</h2>
-                <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-muted">
+                <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-ink-soft">
                   {chapter.body}
                 </p>
               </Reveal>
@@ -151,11 +151,11 @@ export default async function ProjectDetailPage({
           <div className="flex flex-col gap-8 lg:col-span-5">
             {project.results.length > 0 ? (
               <Card>
-                <h2 className="text-[13px] text-faint">{t.work.results}</h2>
+                <h2 className="text-[13px] text-ink-soft">{t.work.results}</h2>
                 <dl className="mt-6 flex flex-col gap-5">
                   {project.results.map((result, i) => (
                     <div key={i} className="flex items-baseline justify-between gap-4 border-b-3 border-ink pb-4 last:border-0 last:pb-0">
-                      <dt className="text-sm text-muted">{pickLocale(result.label, locale)}</dt>
+                      <dt className="text-sm text-ink-soft">{pickLocale(result.label, locale)}</dt>
                       <dd className="display text-2xl text-ink">{result.value}</dd>
                     </div>
                   ))}
@@ -164,7 +164,7 @@ export default async function ProjectDetailPage({
             ) : null}
 
             <Card>
-              <h2 className="text-[13px] text-faint">{t.work.stack}</h2>
+              <h2 className="text-[13px] text-ink-soft">{t.work.stack}</h2>
               <ul className="mt-5 flex flex-wrap gap-2">
                 {project.stack.map((tech) => (
                   <li key={tech}>
@@ -175,7 +175,7 @@ export default async function ProjectDetailPage({
 
               {services.length > 0 ? (
                 <>
-                  <h2 className="mt-8 text-[13px] text-faint">{t.work.servicesUsed}</h2>
+                  <h2 className="mt-8 text-[13px] text-ink-soft">{t.work.servicesUsed}</h2>
                   <ul className="mt-4 flex flex-col gap-3">
                     {services.map((service) => (
                       <li key={service.id}>
@@ -231,7 +231,7 @@ export default async function ProjectDetailPage({
       {next && next.id !== project.id ? (
         <Section bordered>
           <Container>
-            <p className="text-[13px] text-faint">{t.work.nextProject}</p>
+            <p className="text-[13px] text-ink-soft">{t.work.nextProject}</p>
             <Link
               href={routes.project(locale, next.slug)}
               className="group mt-5 flex flex-wrap items-center justify-between gap-6 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink"

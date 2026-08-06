@@ -137,7 +137,7 @@ export default async function PricingPage({
                     /* Selalu tiga kolom. Setiap layanan kini punya tangga
                        Basic/Gold/Premium yang lengkap di data, jadi tidak ada
                        lagi baris yang menyisakan sel kosong di ujungnya. */
-                    <div className="mt-7 grid items-end gap-6 lg:grid-cols-3">
+                    <div className="mt-7 grid gap-6 lg:grid-cols-3 lg:grid-rows-[auto_auto_auto_1fr_auto]">
                       {service.packages.map((tier) => (
                         <TierCard
                           key={tier.tier}

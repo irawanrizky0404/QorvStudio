@@ -23,7 +23,6 @@ import { ProductFeatureIcon } from '@/components/product/product-feature-icon';
 import {
   Card,
   Container,
-  RingIcon,
   RuledCell,
   RuledGrid,
   Section,
@@ -101,7 +100,7 @@ export default async function ProductDetailPage({
             <h1 className="display mt-6 text-[clamp(2.25rem,5vw,4.25rem)] text-ink">
               {name}
             </h1>
-            <p className="mt-6 max-w-xl text-[15px] leading-relaxed text-muted">
+            <p className="mt-6 max-w-xl text-[15px] leading-relaxed text-ink-soft">
               {pickLocale(product.tagline, locale)}
             </p>
 
@@ -114,7 +113,7 @@ export default async function ProductDetailPage({
                 unit={product.price.unit}
               />
               {pickLocale(product.price.note, locale) ? (
-                <p className="mt-2 text-[13px] text-faint">
+                <p className="mt-2 text-[13px] text-ink-soft">
                   {pickLocale(product.price.note, locale)}
                 </p>
               ) : null}
@@ -170,7 +169,7 @@ export default async function ProductDetailPage({
             {pickLocale(product.description, locale)
               .split('\n\n')
               .map((paragraph, i) => (
-                <p key={i} className="mb-5 text-[15px] leading-relaxed text-muted">
+                <p key={i} className="mb-5 text-[15px] leading-relaxed text-ink-soft">
                   {paragraph}
                 </p>
               ))}
@@ -182,20 +181,37 @@ export default async function ProductDetailPage({
         <Section bordered>
           <Container>
             <SectionIntro lead={t.products.features} />
-            <Reveal stagger={0.06} className="mt-14 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-              {product.features.map((feature) => (
-                <Card key={feature.id} className="text-center">
-                  <RingIcon className="mx-auto">
-                    <ProductFeatureIcon name={feature.icon} className="size-5" />
-                  </RingIcon>
-                  <h3 className="display mt-7 text-lg text-ink">
-                    {pickLocale(feature.title, locale)}
-                  </h3>
-                  <p className="mt-3 text-sm leading-relaxed text-muted">
-                    {pickLocale(feature.description, locale)}
-                  </p>
-                </Card>
-              ))}
+            {/* Sel bergaris rata kiri, bukan kartu berbayang rata tengah.
+              *
+              * Versi sebelumnya memakai `text-center` dengan ikon dalam cincin
+              * di tengah — satu-satunya tempat di situs ini yang begitu. Tidak
+              * ada halaman lain yang meratakan isinya ke tengah, jadi seksi ini
+              * terbaca seperti diambil dari template lain, dan teks rata tengah
+              * memaksa mata mencari awal baris yang berpindah-pindah setiap
+              * baris. Bentuk ini sekarang sama dengan kisi Disiplin di Studio
+              * dan Cara Kerja di beranda. */}
+            <Reveal stagger={0.06} className="mt-14">
+              <RuledGrid columns={3}>
+                {product.features.map((feature, position) => (
+                  <RuledCell key={feature.id} className="flex flex-col gap-3">
+                    <div className="flex items-center justify-between gap-4">
+                      <ProductFeatureIcon
+                        name={feature.icon}
+                        className="size-5 shrink-0 text-ink"
+                      />
+                      <span className="label tabular text-ink-soft">
+                        {String(position + 1).padStart(2, '0')}
+                      </span>
+                    </div>
+                    <h3 className="display rank-5 mt-2 text-ink">
+                      {pickLocale(feature.title, locale)}
+                    </h3>
+                    <p className="text-[14.5px] leading-relaxed text-ink-soft">
+                      {pickLocale(feature.description, locale)}
+                    </p>
+                  </RuledCell>
+                ))}
+              </RuledGrid>
             </Reveal>
           </Container>
         </Section>
@@ -257,7 +273,7 @@ export default async function ProductDetailPage({
             <RuledGrid columns={2}>
               {specs.map((spec) => (
                 <RuledCell key={spec.label}>
-                  <h3 className="text-[13px] text-faint">{spec.label}</h3>
+                  <h3 className="text-[13px] text-ink-soft">{spec.label}</h3>
                   <ul className="mt-5 flex flex-wrap gap-2">
                     {spec.values.map((value) => (
                       <li key={value}>
@@ -270,7 +286,7 @@ export default async function ProductDetailPage({
 
               {requirements.length > 0 ? (
                 <RuledCell>
-                  <h3 className="text-[13px] text-faint">{t.products.requirements}</h3>
+                  <h3 className="text-[13px] text-ink-soft">{t.products.requirements}</h3>
                   <ul className="mt-5 space-y-3">
                     {requirements.map((item, i) => (
                       <li
@@ -286,11 +302,11 @@ export default async function ProductDetailPage({
 
               {product.currentVersion ? (
                 <RuledCell>
-                  <h3 className="text-[13px] text-faint">{t.products.version}</h3>
+                  <h3 className="text-[13px] text-ink-soft">{t.products.version}</h3>
                   <p className="display mt-5 text-2xl text-ink">
                     {product.currentVersion}
                   </p>
-                  <p className="mt-2 text-[13px] text-faint">
+                  <p className="mt-2 text-[13px] text-ink-soft">
                     {t.products.lastUpdated}: {formatDate(product.updatedAt, locale)}
                   </p>
                 </RuledCell>
@@ -329,10 +345,10 @@ export default async function ProductDetailPage({
                     <div className="md:col-span-2">
                       <Tag tone="acid">{entry.version}</Tag>
                     </div>
-                    <p className="text-[13px] text-faint md:col-span-3">
+                    <p className="text-[13px] text-ink-soft md:col-span-3">
                       {formatDate(entry.date, locale)}
                     </p>
-                    <p className="text-sm leading-relaxed text-muted md:col-span-7">
+                    <p className="text-sm leading-relaxed text-ink-soft md:col-span-7">
                       {pickLocale(entry.notes, locale)}
                     </p>
                   </Card>
@@ -358,7 +374,7 @@ export default async function ProductDetailPage({
                     <h3 className="display text-xl text-ink transition-colors decoration-[3px] underline-offset-4 group-hover:underline">
                       {pickLocale(item.name, locale)}
                     </h3>
-                    <p className="mt-3 text-sm leading-relaxed text-muted">
+                    <p className="mt-3 text-sm leading-relaxed text-ink-soft">
                       {pickLocale(item.tagline, locale)}
                     </p>
                   </Card>

@@ -90,7 +90,7 @@ export default async function InquiriesPage({
           }
         />
       ) : (
-        <ul className="divide-y divide-line border-y border-ink">
+        <ul className="divide-y divide-ink border-y border-ink">
           {items.map((inquiry) => (
             <li key={inquiry.id}>
               <Link

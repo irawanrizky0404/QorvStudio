@@ -47,7 +47,7 @@ export function Toaster(): ReactNode {
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold text-ink">{item.title}</p>
               {item.description ? (
-                <p className="mt-1 text-[13px] leading-relaxed text-muted">{item.description}</p>
+                <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">{item.description}</p>
               ) : null}
             </div>
             <button

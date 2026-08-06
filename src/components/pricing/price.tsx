@@ -37,10 +37,20 @@ export function Price({
  * Service package card.
  *
  * Tier yang direkomendasikan tidak diberi lencana "populer". Ia BERDIRI LEBIH
- * TINGGI — padding lebih besar dan bayangan 16px lawan 9px — sesuai aturan yang
- * sama yang mengangkat disiplin unggulan dan kartu di beranda: yang lebih
- * penting membuang bayangan lebih panjang. Lencana adalah keterangan; tinggi
- * adalah bentuk, dan bentuk terbaca sebelum satu kata pun dibaca.
+ * TINGGI — bayangan 16px lawan 9px — sesuai aturan yang sama yang mengangkat
+ * disiplin unggulan dan kartu di beranda: yang lebih penting membuang bayangan
+ * lebih panjang. Lencana adalah keterangan; bayangan adalah bentuk, dan bentuk
+ * terbaca sebelum satu kata pun dibaca.
+ *
+ * Padding vertikalnya kini sama untuk ketiganya. Sebelumnya kartu unggulan
+ * memakai `py-11` lawan `py-7`, yang menggeser SELURUH isinya ~16px ke bawah:
+ * nama, harga, dan setiap baris fitur berhenti sejajar dengan kartu di kiri dan
+ * kanannya. Membandingkan tiga paket adalah satu-satunya tugas tabel ini, dan
+ * baris yang tidak sebaris membuatnya lebih sulit — emphasis kedua itu dibayar
+ * dengan hal yang justru paling penting.
+ *
+ * `subgrid` mengunci sisanya: deskripsi dua baris di satu kartu dan satu baris
+ * di kartu lain tidak lagi menggeser harga di bawahnya.
  *
  * Ceklis dari lucide dibuang. Di sistem yang tidak punya satupun kurva, ikon
  * centang adalah bentuk asing; kotak tinta padat melakukan pekerjaan yang sama.
@@ -57,16 +67,17 @@ export function TierCard({
   return (
     <div
       className={cn(
-        'flex flex-col border-3 border-ink bg-paper px-6 transition-[transform,box-shadow] duration-150 ease-out',
+        'flex flex-col border-3 border-ink bg-paper px-6 py-7 transition-[transform,box-shadow] duration-150 ease-out',
+        'lg:row-span-5 lg:grid lg:grid-rows-subgrid lg:gap-0',
         'hover:-translate-x-1 hover:-translate-y-1',
         emphasized
-          ? 'py-11 shadow-[16px_16px_0_var(--color-ink)] hover:shadow-[20px_20px_0_var(--color-ink)]'
-          : 'py-7 shadow-[9px_9px_0_var(--color-ink)] hover:shadow-[13px_13px_0_var(--color-ink)]',
+          ? 'shadow-[16px_16px_0_var(--color-ink)] hover:shadow-[20px_20px_0_var(--color-ink)]'
+          : 'shadow-[9px_9px_0_var(--color-ink)] hover:shadow-[13px_13px_0_var(--color-ink)]',
       )}
     >
       <h3 className="display rank-4">{label}</h3>
 
-      <p className="mt-3 min-h-10 text-[14.5px] leading-relaxed">
+      <p className="mt-3 text-[14.5px] leading-relaxed">
         {pickLocale(tier.description, locale)}
       </p>
 

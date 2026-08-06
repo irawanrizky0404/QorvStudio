@@ -94,12 +94,12 @@ function Placeholder({
         className="absolute inset-0 opacity-[0.06]"
         style={{
           backgroundImage:
-            'repeating-linear-gradient(135deg, var(--color-chrome) 0 1px, transparent 1px 10px)',
+            'repeating-linear-gradient(135deg, var(--color-ink) 0 1px, transparent 1px 10px)',
         }}
       />
-      <span className="relative font-mono text-[11px] text-chrome/35">{ratio(width, height)}</span>
+      <span className="relative font-mono text-[11px] text-ink/35">{ratio(width, height)}</span>
       {label ? (
-        <span className="relative truncate font-mono text-[11px] text-chrome/30">{label}</span>
+        <span className="relative truncate font-mono text-[11px] text-ink/30">{label}</span>
       ) : null}
     </div>
   );
