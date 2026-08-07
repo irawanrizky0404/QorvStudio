@@ -3,6 +3,7 @@
 import { headers } from 'next/headers';
 import { inquiryRepo } from '@/lib/repo';
 import { inquiryFormSchema } from '@/lib/schemas/inquiry';
+import { hit } from '@/lib/rate-limit';
 
 export interface ActionResult {
   ok: boolean;
@@ -11,24 +12,9 @@ export interface ActionResult {
   fieldErrors?: Record<string, string>;
 }
 
-/**
- * ponytail: in-memory sliding window keyed by IP. Correct for a single process;
- * Phase 5 replaces it with a KV counter that works across instances.
- */
-const LIMIT = { max: 3, windowMs: 10 * 60 * 1000 };
-const attempts = new Map<string, number[]>();
-
-function limited(key: string): boolean {
-  const now = Date.now();
-  const recent = (attempts.get(key) ?? []).filter((at) => now - at < LIMIT.windowMs);
-  if (recent.length >= LIMIT.max) {
-    attempts.set(key, recent);
-    return true;
-  }
-  recent.push(now);
-  attempts.set(key, recent);
-  return false;
-}
+/** Tiga kiriman per IP tiap sepuluh menit. Hitungannya di Redis — lihat `hit`. */
+const MAX = 3;
+const WINDOW_SEC = 10 * 60;
 
 export async function submitInquiry(raw: unknown): Promise<ActionResult> {
   const parsed = inquiryFormSchema.safeParse(raw);
@@ -44,7 +30,8 @@ export async function submitInquiry(raw: unknown): Promise<ActionResult> {
 
   const h = await headers();
   const ip = h.get('x-forwarded-for')?.split(',')[0]?.trim() ?? h.get('x-real-ip') ?? 'unknown';
-  if (limited(ip)) return { ok: false, code: 'RATE_LIMITED' };
+  const rate = await hit('inquiry', ip, MAX, WINDOW_SEC);
+  if (rate.limited) return { ok: false, code: 'RATE_LIMITED' };
 
   const d = parsed.data;
 

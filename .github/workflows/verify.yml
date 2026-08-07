@@ -1,0 +1,55 @@
+name: verify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Satu run per branch. Push beruntun membatalkan run yang lama alih-alih
+# mengantre — yang penting hanya hasil commit terakhir.
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    # Build berjalan tanpa kredensial Redis, dan itu memang boleh: driver
+    # penyimpanan sengaja jatuh ke memori saat `next build` supaya build bisa
+    # dipakai memverifikasi apa pun tanpa akun. Lihat catatan di
+    # `src/lib/repo/driver.ts`.
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - run: npm ci
+
+      - name: typecheck
+        run: npm run typecheck
+
+      - name: lint
+        run: npm run lint
+
+      # `npm test` sengaja TIDAK dijalankan di sini.
+      #
+      # `tests/` ada di `.gitignore` atas permintaan, jadi berkasnya tidak ikut
+      # ke repositori dan runner tidak punya apa pun untuk dijalankan — langkah
+      # ini akan selalu gagal, bukan karena kodenya rusak. Suite-nya tetap ada
+      # dan tetap dijalankan lokal lewat `npm run verify`.
+      #
+      # Kalau nanti `tests/` dikembalikan ke repo, tambahkan langkah:
+      #   - name: test
+      #     run: npm test
+
+      - name: build
+        run: npm run build

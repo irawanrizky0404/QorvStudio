@@ -34,6 +34,15 @@ export interface StorageDriver {
   /** Membaca nilai; menulis `seed()` lebih dulu bila kuncinya belum ada. */
   loadOrSeed<T>(key: string, seed: () => T): Promise<T>;
   save<T>(key: string, value: T): Promise<void>;
+  /**
+   * Menaikkan penghitung dan mengembalikan nilai barunya, dengan masa berlaku
+   * dipasang saat kunci pertama kali dibuat.
+   *
+   * Dipakai pembatas laju. Ini satu-satunya operasi yang harus atomik: dua
+   * permintaan bersamaan yang membaca-lalu-menulis akan sama-sama melihat
+   * hitungan lama, dan batasnya bocor persis saat sedang ditekan.
+   */
+  increment(key: string, ttlSeconds: number): Promise<number>;
 }
 
 /* ── Memori ───────────────────────────────────────────────────────────────── */
@@ -56,6 +65,12 @@ const memoryDriver: StorageDriver = {
 
   async save<T>(key: string, value: T): Promise<void> {
     memory.set(key, value);
+  },
+
+  async increment(key: string): Promise<number> {
+    const next = ((memory.get(key) as number | undefined) ?? 0) + 1;
+    memory.set(key, next);
+    return next;
   },
 };
 
@@ -81,6 +96,15 @@ function redisDriver(redis: Redis): StorageDriver {
 
     async save<T>(key: string, value: T): Promise<void> {
       await redis.set(key, value);
+    },
+
+    async increment(key: string, ttlSeconds: number): Promise<number> {
+      const value = await redis.incr(key);
+      /* Masa berlaku dipasang hanya pada kenaikan pertama. Memasangnya di setiap
+         kenaikan akan memperpanjang jendela setiap kali ada permintaan — pemohon
+         yang terus mengetuk tidak akan pernah keluar dari jendelanya sendiri. */
+      if (value === 1) await redis.expire(key, ttlSeconds);
+      return value;
     },
   };
 }
@@ -123,11 +147,26 @@ function pick(): StorageDriver {
    * justru lebih terlihat.
    */
   const building = process.env.NEXT_PHASE === 'phase-production-build';
-  if (process.env.NODE_ENV === 'production' && !building) {
+
+  /*
+   * Jalan keluar yang disengaja untuk menjalankan build produksi di mesin
+   * sendiri.
+   *
+   * `npm start` memakai `NODE_ENV=production`, jadi tanpa ini penjaganya menyala
+   * dan setiap rute dinamis balas 500 di localhost — build produksi jadi tidak
+   * bisa diperiksa sama sekali sebelum dikirim. Penjaganya tetap menyala secara
+   * bawaan di mana pun; mematikannya menuntut satu variabel yang harus diketik
+   * sendiri, dan namanya menyebutkan persis apa yang sedang ditukar.
+   */
+  const allowMemory = process.env.QORV_ALLOW_MEMORY_STORE === '1';
+
+  if (process.env.NODE_ENV === 'production' && !building && !allowMemory) {
     throw new Error(
       'Kredensial Redis wajib ada di produksi: UPSTASH_REDIS_REST_URL + ' +
         'UPSTASH_REDIS_REST_TOKEN, atau KV_REST_API_URL + KV_REST_API_TOKEN. ' +
-        'Pasang integrasi Upstash lewat Vercel Marketplace, lalu deploy ulang.',
+        'Pasang integrasi Upstash lewat Vercel Marketplace, lalu deploy ulang. ' +
+        'Untuk menjalankan build produksi di mesin sendiri tanpa Redis, setel ' +
+        'QORV_ALLOW_MEMORY_STORE=1 — datanya hilang tiap restart.',
     );
   }
 

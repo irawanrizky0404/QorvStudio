@@ -129,9 +129,33 @@ pernah dapat teks error persisnya.
 
 ## PHASE 4 — Quality Gate
 
-- [~] 4.1 Audit aksesibilitas — **kontras selesai dan bersih**: diukur di 10 halaman, 950 simpul teks, nol kegagalan WCAG AA. Sasaran sentuh dinaikkan ke 44px lewat `pointer-coarse`. Skip link yang tidak pernah bekerja (prefix ganda `focus:focus:`) diperbaiki. **Belum:** axe, jalur keyboard penuh, pembaca layar, verifikasi reduced-motion.
+- [~] 4.1 Audit aksesibilitas — **struktur dan kontras bersih dan terukur.**
+      Kontras: 10 halaman, 950 simpul teks, nol kegagalan WCAG AA.
+      Struktur: 12 halaman diperiksa untuk alt gambar, nama kontrol, label
+      field, lompatan heading, jumlah `h1`, landmark `main`, atribut `lang`,
+      dan `tabindex` positif — **satu temuan**, halaman 404 tanpa skip link.
+      Fokus keyboard: ada aturan global `:focus-visible { outline: 3px solid
+      ink }`, jadi setiap elemen fokusabel punya penanda, bukan hanya yang
+      membawa utilitas per komponen.
+      Sasaran sentuh dinaikkan ke 44px lewat `pointer-coarse`.
+      **Belum:** pembaca layar sungguhan, urutan Tab yang dijalani manual,
+      dan verifikasi reduced-motion. Ketiganya butuh orang, bukan skrip.
 - [ ] 4.2 Lighthouse — LCP < 2.5s, CLS < 0.1, INP < 200ms **(belum dijalankan)**
-- [!] 4.3 Bundle check — **status belum diketahui.** Runtime Next 16 + React 19 saja sekitar 168kb gzip lawan anggaran 150kb, dan build Turbopack tidak lagi mencetak First Load per rute. GSAP (~50kb) sudah dicabut seluruhnya dari bundel publik sejak catatan itu ditulis, jadi angkanya kemungkinan turun — tapi butuh pengukuran nyata sebelum anggarannya dinyatakan terpenuhi atau ditulis ulang. Lihat `PROJECT_MEMORY.md` Q-12.
+- [~] 4.3 Bundle check — **sudah diukur**, dari build produksi lewat
+      `performance.getEntriesByType('resource')` di beranda:
+
+      | | Terkirim (terkompresi) | Anggaran |
+      | --- | --- | --- |
+      | JS (14 berkas) | **175 KB** | 150 KB |
+      | CSS | 22 KB | 30 KB |
+      | Font | 48 KB | — |
+
+      CSS lolos. JS **17% di atas anggaran**. Potongan terbesarnya 69 KB
+      (runtime React + Next), sisanya pecahan 7–29 KB — tidak ada satu
+      dependensi yang bisa dibuang untuk menutup selisihnya. Anggaran 150 KB
+      ditulis sebelum framework-nya dipilih. Pilihannya jujur ada dua: tulis
+      ulang anggarannya, atau potong Radix/RHF/Zod dari jalur bersama. Belum
+      diputuskan.
 - [x] 4.4 Kamus `id.ts` lengkap (ditegakkan tipe); tidak ada string publik hardcoded
 - [x] 4.5 Tes unit — 26 assertion: `pickLocale`, turunan `startingPrice`, urutan tier, `formatPrice` null-vs-nol, slug, plus 7 tes `Collection` di atas driver memori (penyemaian, konflik slug, reorder, draft, NOT_FOUND). **Catatan: `tests/` di-gitignore atas permintaan, jadi suite-nya tidak ikut di repo.**
 - [ ] 4.6 Playwright end-to-end — **belum ditulis**
@@ -161,7 +185,7 @@ Vercel KV dengan indeks sekunder eksplisit. Dua hal berubah:
 - [!] 5.3 Protokol tulis berpipa — **tidak berlaku.** Tidak ada indeks yang perlu dijaga konsisten. Ceiling-nya dicatat: baca-ubah-tulis seluruh koleksi tanpa penguncian, dua penyuntingan bersamaan berarti yang terakhir menang.
 - [x] 5.4 Penyemaian — otomatis pada pembacaan pertama lewat `loadOrSeed` dengan `nx`, bukan skrip terpisah
 - [!] 5.5 Route Handler publik — **tidak dibuat, dan tidak dibutuhkan.** Server Component membaca repositori langsung; menyisipkan lapisan HTTP di antaranya hanya menambah perjalanan jaringan tanpa satu pun pemanggil di luar.
-- [~] 5.6 Kiriman formulir kontak — Zod dan honeypot ada; **pembatasan lajunya masih di memori proses**, jadi belum berlaku lintas instance
+- [x] 5.6 Kiriman formulir kontak — Zod, honeypot, dan **pembatas laju di Redis**. Dua penghitung `Map` di memori proses diganti `lib/rate-limit.ts`: jendela tetap lewat `INCR` + `EXPIRE`, dipakai bersama login. Di serverless, penghitung per instance berarti batasnya tidak benar-benar ada — 6 percobaan per 15 menit menjadi 6 dikali berapa pun instance yang hidup.
 - [x] 5.7 Auth — bukan `jose` JWT: cookie bertanda HMAC + scrypt dari `node:crypto`, tanpa dependensi baru. Peran dibaca ulang tiap permintaan, bukan disimpan di cookie, jadi pencabutan akses berlaku seketika.
 - [!] 5.8 Route Handler admin — **tidak dibuat.** Server Action, alasan yang sama dengan 5.5.
 - [x] 5.8a Penulisan lintas entitas — menghapus layanan melepas `serviceIds` dari tiap proyek dan `relatedServiceIds`; `startingPrice` dihitung ulang di server
@@ -192,9 +216,28 @@ Pekerjaan yang tidak ada di tracker ini, tapi dikerjakan dan sudah live:
 
 ## PHASE 6 — Production
 
-- [ ] 6.1 Header keamanan: CSP dengan nonce, HSTS, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`
-- [ ] 6.2 GitHub Actions: `npm run verify`
-- [ ] 6.3 Skrip backup/ekspor Redis
+- [x] 6.1 Header keamanan — CSP, HSTS, `X-Content-Type-Options`, `Referrer-Policy`,
+      `X-Frame-Options`, `Permissions-Policy`. Diverifikasi: nol pelanggaran CSP
+      di konsol.
+      **`script-src` memakai `'unsafe-inline'`, bukan nonce** — dan itu keputusan:
+      CSP ber-nonce menuntut tiap permintaan melewati proxy untuk membuat
+      nonce-nya, yang mematikan cache statis 54 halaman. Situs ini tidak punya
+      satupun masukan pengguna yang dirender sebagai HTML dan tidak ada
+      `dangerouslySetInnerHTML` di seluruh basis kode, jadi permukaan yang
+      dibayar itu belum ada. Sisanya tetap ketat: `object-src 'none'`,
+      `frame-ancestors 'none'`, `base-uri 'self'`, `form-action 'self'`.
+- [x] 6.2 GitHub Actions — `.github/workflows/verify.yml`: typecheck, lint, build.
+      **`npm test` sengaja tidak dijalankan di CI**: `tests/` ada di `.gitignore`,
+      jadi runner tidak punya berkas untuk dijalankan dan langkahnya akan selalu
+      gagal karena alasan yang salah. Kembalikan `tests/` ke repo kalau mau
+      CI ikut menjalankannya.
+- [~] 6.3 Skrip backup/ekspor Redis — `npm run backup` mengekspor enam kunci ke
+      `backups/`, `npm run backup -- --in <berkas>` memulihkannya. `backups/`
+      masuk `.gitignore` karena hasilnya memuat hash password.
+      **Belum pernah dijalankan terhadap Redis sungguhan** — kredensialnya
+      ditandai Sensitive di Vercel dan tidak bisa dibaca balik. Yang sudah
+      diverifikasi hanya jalur gagalnya: tanpa kredensial ia berhenti dengan
+      pesan yang menyebutkan langkah berikutnya.
 - [!] 6.4 **Isi sungguhan lewat panel — ini yang menahan peluncuran.**
       Seluruh isi situs masih fiktif: nama proyek, klien, testimoni, angka hasil.
       **Harganya bertentangan dengan arahan** — matriks menampilkan Rp 18–210 juta

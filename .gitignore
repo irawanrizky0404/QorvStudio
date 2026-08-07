@@ -25,3 +25,6 @@ public/uploads/*
 tests/
 
 .vercel
+
+# Cadangan Redis — memuat hash password. Jangan di-commit.
+backups/

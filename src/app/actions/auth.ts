@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { endSession, startSession } from '@/lib/auth';
 import { userRepo } from '@/lib/repo';
 import { loginSchema } from '@/lib/schemas/user';
+import { hit } from '@/lib/rate-limit';
 
 export interface LoginResult {
   ok: boolean;
@@ -14,26 +15,17 @@ export interface LoginResult {
 }
 
 /**
- * ponytail: penghitung percobaan di memori. Benar untuk satu proses; Phase 5
- * memindahkannya ke penghitung KV supaya bertahan setelah restart dan berlaku
- * lintas instance.
+ * Enam percobaan per alamat email tiap lima belas menit.
  *
- * Dikunci per alamat email, bukan satu penghitung global seperti sebelumnya:
- * dengan penghitung bersama, satu penebak bisa mengunci seluruh operator lain
- * keluar hanya dengan mengirim enam tebakan salah.
+ * Dikunci per alamat, bukan satu penghitung global: dengan penghitung bersama,
+ * satu penebak bisa mengunci seluruh operator lain keluar hanya dengan mengirim
+ * enam tebakan salah.
+ *
+ * Hitungannya di Redis, bukan lagi `Map` di memori proses — lihat `hit`. Di
+ * serverless, penghitung per instance berarti batasnya tidak benar-benar ada.
  */
-const LIMIT = { max: 6, windowMs: 15 * 60 * 1000 };
-const attempts = new Map<string, number[]>();
-
-function limited(key: string): boolean {
-  const now = Date.now();
-  const list = attempts.get(key) ?? [];
-  while (list.length > 0 && now - (list[0] as number) > LIMIT.windowMs) list.shift();
-  attempts.set(key, list);
-  if (list.length >= LIMIT.max) return true;
-  list.push(now);
-  return false;
-}
+const MAX = 6;
+const WINDOW_SEC = 15 * 60;
 
 /** Hanya path satu-origin, supaya `?from=` tidak bisa melempar operator keluar. */
 function safeRedirect(from: string): string {
@@ -48,7 +40,8 @@ export async function login(raw: unknown): Promise<LoginResult> {
 
   const email = parsed.data.email.trim().toLowerCase();
 
-  if (limited(email)) {
+  const rate = await hit('login', email, MAX, WINDOW_SEC);
+  if (rate.limited) {
     return { ok: false, message: 'Terlalu banyak percobaan. Tunggu beberapa menit.' };
   }
 
@@ -60,7 +53,6 @@ export async function login(raw: unknown): Promise<LoginResult> {
   }
 
   await startSession(user.id);
-  attempts.delete(email);
 
   /*
    * Tujuannya dikembalikan, bukan `redirect()`.
