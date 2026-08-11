@@ -34,6 +34,17 @@ const OUT = path.join(process.cwd(), 'public', 'images', 'products');
 const TMP = path.join(process.cwd(), '.cache', 'product-shots');
 const MEDIA = path.join(process.cwd(), 'src', 'lib', 'mock-data', 'product-media.ts');
 
+/*
+ * Profil Chrome. Sekali pakai secara bawaan; kalau `SHOT_PROFILE` disetel,
+ * profil itu dipakai dan tidak dihapus di akhir — di situlah cookie sesi login
+ * disimpan. Profil sekali pakai tidak pernah punya sesi, jadi tanpa ini setiap
+ * halaman terkunci hanya menghasilkan tangkapan halaman masuk.
+ */
+const AUTHED_RUN = process.argv.includes('--authed');
+const PROFILE = AUTHED_RUN
+  ? path.join(process.cwd(), '.cache', 'product-profile')
+  : path.join(TMP, 'profile');
+
 /** Dev server lokal Clipper Studio: `npm run dev` di PRODUCT/Clipper Studio. */
 const CLIPPER = process.env.CLIPPER_URL ?? 'http://localhost:4310';
 
@@ -83,6 +94,52 @@ const SHOTS: Record<string, string[]> = {
   'wakaf-rw': [`${WAKAF}/masuk`],
 };
 
+/**
+ * Halaman di balik login, dipakai menggantikan daftar publik di atas ketika
+ * `SHOT_PROFILE` menunjuk ke profil Chrome yang sudah login.
+ *
+ * Bagian terkuat dari keempat aplikasi ini justru ada di balik login — dasbor
+ * bendahara, antrian verifikasi, pengelolaan pesanan. Yang publik cuma etalase.
+ *
+ * Skrip ini tidak pernah mengisi form login sendiri. Alur yang dipakai: buka
+ * Chrome biasa dengan profil ini, login manual, tutup, lalu jalankan skrip —
+ * cookie-nya ikut terbawa. Lihat `npm run product:profile`, lalu `npm run product:shots:auth`.
+ */
+const AUTHED: Record<string, string[]> = {
+  'qorv-commerce': [
+    `${COMMERCE}/dashboard`,
+    `${COMMERCE}/dashboard/products`,
+    `${COMMERCE}/dashboard/orders`,
+    `${COMMERCE}/dashboard/reports`,
+    `${COMMERCE}/dashboard/store-decoration`,
+    `${COMMERCE}/dashboard/customers`,
+  ],
+  'qorv-catering': [
+    `${CATERING}/admin/overview`,
+    `${CATERING}/admin/menu`,
+    `${CATERING}/admin/categories`,
+    `${CATERING}/admin/reviews`,
+    `${CATERING}/admin/staff`,
+    `${CATERING}/menu`,
+  ],
+  'clipper-studio': [
+    `${CLIPPER}/projects`,
+    `${CLIPPER}/video-manager`,
+    `${CLIPPER}/settings`,
+    `${CLIPPER}/billing`,
+    `${CLIPPER}/`,
+    `${CLIPPER}/pricing`,
+  ],
+  'wakaf-rw': [
+    `${WAKAF}/admin`,
+    `${WAKAF}/admin/verifikasi`,
+    `${WAKAF}/admin/kk`,
+    `${WAKAF}/admin/periode`,
+    `${WAKAF}/admin/bayar`,
+    `${WAKAF}/rt`,
+  ],
+};
+
 /** Ukuran jendela: 16:10 sedikit lebih tinggi dari 16:9, jadi lipatan pertama
  *  halaman tertangkap lebih utuh tanpa perlu tangkapan seluruh halaman — yang
  *  akan menghasilkan gambar sepanjang lima layar dan tak terbaca di galeri. */
@@ -97,7 +154,7 @@ async function shoot(url: string, png: string): Promise<void> {
       '--disable-gpu',
       '--no-sandbox',
       '--hide-scrollbars',
-      `--user-data-dir=${path.join(TMP, 'profile')}`,
+      `--user-data-dir=${PROFILE}`,
       `--window-size=${WIDTH},${HEIGHT}`,
       /* Beri waktu font, gambar, dan hidrasi klien selesai. Tanpa ini yang
          tertangkap adalah kerangka kosong sebelum data mendarat. */
@@ -142,8 +199,10 @@ for (const [slug, entries] of Object.entries(PRODUCT_MEDIA)) {
 /* Argumen opsional membatasi ke satu aplikasi: `npm run product:shots -- clipper-studio`.
    Satu aplikasi berubah jauh lebih sering daripada keempatnya sekaligus, dan
    mengulang semuanya berarti dua puluh lima kali muat halaman demi enam. */
-const only = process.argv.slice(2);
-const targets = Object.entries(SHOTS).filter(([slug]) => only.length === 0 || only.includes(slug));
+const only = process.argv.slice(2).filter((arg) => arg !== '--authed');
+const targets = Object.entries(AUTHED_RUN ? AUTHED : SHOTS).filter(
+  ([slug]) => only.length === 0 || only.includes(slug),
+);
 if (targets.length === 0) throw new Error(`Tidak ada aplikasi cocok: ${only.join(', ')}`);
 
 for (const [slug, urls] of targets) {
@@ -186,5 +245,6 @@ await writeFile(
   ].join('\n'),
 );
 
+/* Profil persisten hidup di luar TMP, jadi menghapus TMP tidak membuang sesinya. */
 await rm(TMP, { recursive: true, force: true });
 console.log(`\nManifes: ${path.relative(process.cwd(), MEDIA)}`);

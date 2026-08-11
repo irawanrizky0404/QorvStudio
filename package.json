@@ -15,7 +15,9 @@
     "backup": "node --import tsx --env-file-if-exists=.env.local scripts/backup.ts",
     "import:work": "node --import tsx scripts/import-work-images.ts",
     "product:covers": "node --import tsx scripts/make-product-covers.tsx",
-    "product:shots": "node --import tsx scripts/capture-product-shots.ts"
+    "product:shots": "node --import tsx scripts/capture-product-shots.ts",
+    "product:profile": "node --import tsx scripts/open-shot-profile.ts",
+    "product:shots:auth": "node --import tsx scripts/capture-product-shots.ts --authed"
   },
   "dependencies": {
     "@hookform/resolvers": "5.7.1",

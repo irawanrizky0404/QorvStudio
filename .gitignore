@@ -28,3 +28,6 @@ tests/
 
 # Cadangan Redis — memuat hash password. Jangan di-commit.
 backups/
+
+# profil Chrome dan berkas antara untuk tangkapan layar produk
+.cache/
