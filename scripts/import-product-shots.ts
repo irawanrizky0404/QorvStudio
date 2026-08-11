@@ -58,19 +58,32 @@ const PLAN: Record<string, Array<Manual | Existing>> = {
     { manual: 17 }, // Produk
     { manual: 19 }, // Pesanan
     { manual: 20 }, // Laporan
-    { manual: 22 }, // Dekorasi toko, dengan pratinjau etalase
+    { manual: 21 }, // Voucher
+    { manual: 22 }, // Dekorasi toko: warna dan pratinjau etalase
+    { manual: 23 }, // Dekorasi toko: saklar section
+    { manual: 25 }, // Docs
     { manual: 26 }, // Live chat per pesanan
     { keep: '01' }, // Etalase publik
+    { keep: '02' }, // Katalog publik
     { keep: '03' }, // Detail produk publik
+    { keep: '04' }, // Katalog tersaring diskon
+    { keep: '05' }, // Pencarian
+    { keep: '06' }, // Halaman masuk pembeli
   ],
   'clipper-studio': [
     { manual: 2 }, // Editor: timeline, preview, panel properti
     { manual: 3 }, // Editor dengan subtitle
     { manual: 1 }, // Daftar proyek
     { manual: 8 }, // AI Smart Chapters
+    { manual: 7 }, // Landing
     { manual: 5 }, // Tagihan & langganan
     { manual: 4 }, // Pengaturan
-    { keep: '02' }, // Halaman harga publik
+    { manual: 6 }, // Bantuan & panduan
+    { keep: '02' }, // Harga publik
+    { keep: '03' }, // Docs: overview
+    { keep: '04' }, // Docs: editor flow
+    { keep: '05' }, // Docs: video manager
+    { keep: '06' }, // Halaman masuk publik
   ],
   'qorv-catering': [
     { manual: 13 }, // Dashboard admin
@@ -79,6 +92,10 @@ const PLAN: Record<string, Array<Manual | Existing>> = {
     { manual: 16 }, // Manajemen ulasan
     { keep: '01' }, // Beranda publik
     { keep: '02' }, // Katalog menu publik
+    { keep: '03' }, // Detail menu
+    { keep: '04' }, // Galeri
+    { keep: '05' }, // Tentang
+    { keep: '06' }, // FAQ
   ],
   'wakaf-rw': [
     { manual: 9 }, // Dashboard RW
@@ -90,9 +107,15 @@ const PLAN: Record<string, Array<Manual | Existing>> = {
 };
 
 /*
- * Nomor 24 sengaja tidak dipakai: tangkapannya memuat taskbar Windows dan
+ * Yang tidak dipakai hanya nomor 24: tangkapannya memuat taskbar Windows dan
  * terpotong di atas. Nomor 25 adalah halaman yang sama tanpa keduanya.
- * Nomor 7, 6, 21, 23, dan 25 dilewati karena isinya sudah terwakili gambar lain.
+ *
+ * Selain itu semuanya masuk. Galerinya sengaja tidak dibatasi enam per produk —
+ * sebuah dashboard dinilai dari cakupannya, dan memangkas sembilan layar jadi
+ * enam justru membuang bukti bahwa modul-modulnya memang ada.
+ *
+ * Landing Clipper diambil dari tangkapan manual (nomor 7), bukan dari hasil
+ * skrip tangkap, supaya halaman yang sama tidak muncul dua kali.
  */
 
 const manualFiles = (await readdir(SOURCE))

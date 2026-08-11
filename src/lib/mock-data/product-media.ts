@@ -2,6 +2,30 @@
 export const PRODUCT_MEDIA: Record<string, Record<string, readonly [number, number]>> =
 {
   "qorv-commerce": {
+    "10": [
+      1600,
+      1000
+    ],
+    "11": [
+      1600,
+      1000
+    ],
+    "12": [
+      1600,
+      1000
+    ],
+    "13": [
+      1600,
+      1000
+    ],
+    "14": [
+      1600,
+      1000
+    ],
+    "15": [
+      1600,
+      1000
+    ],
     "cover": [
       1600,
       1200
@@ -24,22 +48,42 @@ export const PRODUCT_MEDIA: Record<string, Record<string, readonly [number, numb
     ],
     "05": [
       1600,
-      762
+      759
     ],
     "06": [
       1600,
-      771
+      762
     ],
     "07": [
       1600,
-      1000
+      756
     ],
     "08": [
       1600,
-      1000
+      770
+    ],
+    "09": [
+      1600,
+      771
     ]
   },
   "clipper-studio": {
+    "10": [
+      1600,
+      1000
+    ],
+    "11": [
+      1600,
+      1000
+    ],
+    "12": [
+      1600,
+      1000
+    ],
+    "13": [
+      1600,
+      1000
+    ],
     "cover": [
       1600,
       1200
@@ -62,18 +106,30 @@ export const PRODUCT_MEDIA: Record<string, Record<string, readonly [number, numb
     ],
     "05": [
       1600,
-      761
+      768
     ],
     "06": [
       1600,
-      772
+      761
     ],
     "07": [
+      1600,
+      772
+    ],
+    "08": [
+      1600,
+      758
+    ],
+    "09": [
       1600,
       1000
     ]
   },
   "qorv-catering": {
+    "10": [
+      1600,
+      1000
+    ],
     "cover": [
       1600,
       1200
@@ -99,6 +155,18 @@ export const PRODUCT_MEDIA: Record<string, Record<string, readonly [number, numb
       1000
     ],
     "06": [
+      1600,
+      1000
+    ],
+    "07": [
+      1600,
+      1000
+    ],
+    "08": [
+      1600,
+      1000
+    ],
+    "09": [
       1600,
       1000
     ]

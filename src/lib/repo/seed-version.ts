@@ -16,6 +16,7 @@
  *   v2  karya, produk, dan setelan sungguhan
  *   v3  galeri produk terisi, cover produk dirancang, cover karya dipertajam
  *   v4  galeri produk memuat dashboard, cover tiap produk berkomposisi sendiri
+ *   v5  galeri produk tidak lagi dibatasi enam — seluruh layar yang ada masuk
  *
  * Berkas sendiri, bukan di `driver.ts`, karena `driver.ts` diawali
  * `import 'server-only'` — dan skrip cadangan yang jalan di Node biasa langsung
@@ -23,4 +24,4 @@
  * tangan di skrip cadangan, dan sempat tertinggal satu versi tanpa satu pun
  * peringatan: yang tercadangkan justru data yang sudah ditinggalkan.
  */
-export const SEED_VERSION = 4;
+export const SEED_VERSION = 5;
