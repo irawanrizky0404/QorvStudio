@@ -2,6 +2,8 @@ import 'server-only';
 
 import { Redis } from '@upstash/redis';
 
+import { SEED_VERSION } from './seed-version';
+
 /**
  * Di mana data repositori disimpan.
  *
@@ -194,25 +196,8 @@ export function storeKey(name: string): string {
   return `qorv:${name}`;
 }
 
-/**
- * Versi seed.
- *
- * Menaikkannya membuat setiap koleksi berseed pindah ke kunci baru, sehingga
- * data seed yang baru benar-benar dipakai. Ini **satu-satunya** cara mengganti
- * isi yang sudah terlanjur tersimpan: `loadOrSeed` sengaja tidak menimpa kunci
- * yang sudah ada, karena kalau ia menimpa, setiap deploy akan menghapus
- * pekerjaan operator.
- *
- * Data lama tidak dihapus — ia tetap ada di kunci versi sebelumnya dan bisa
- * dibaca kembali kalau perlu. Yang berpindah hanya kunci yang dibaca aplikasi.
- *
- * Naikkan hanya kalau memang bermaksud membuang isi yang sekarang. Suntingan
- * apa pun yang dibuat lewat panel pada versi lama tidak ikut pindah.
- *
- *   v1  data contoh saat membangun
- *   v2  karya, produk, dan setelan sungguhan
- */
-const SEED_VERSION = 2;
+/* Versi seed hidup di modulnya sendiri — lihat `seed-version.ts` untuk alasannya. */
+export { SEED_VERSION } from './seed-version';
 
 /**
  * Kunci penyimpanan untuk sebuah koleksi berseed.

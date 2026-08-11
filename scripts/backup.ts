@@ -18,19 +18,22 @@
  * masuk `.gitignore`.
  */
 import { Redis } from '@upstash/redis';
+import { SEED_VERSION } from '../src/lib/repo/seed-version';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 /*
- * Kunci koleksi berversi — lihat `SEED_VERSION` di `src/lib/repo/driver.ts`.
+ * Kunci koleksi berversi, dirakit dari `SEED_VERSION` yang sama dengan yang
+ * dipakai aplikasi. Sebelumnya nomor versinya ditulis tangan di sini, dan saat
+ * `SEED_VERSION` naik berkas ini diam-diam tetap mencadangkan versi lama — yaitu
+ * data yang justru sudah ditinggalkan.
+ *
  * `qorv:users` tidak berversi: akun operator harus selamat dari pergantian seed.
  */
 const KEYS = [
-  'qorv:v2:projects',
-  'qorv:v2:services',
-  'qorv:v2:products',
-  'qorv:v2:inquiries',
-  'qorv:v2:settings',
+  ...['projects', 'services', 'products', 'inquiries', 'settings'].map(
+    (name) => `qorv:v${SEED_VERSION}:${name}`,
+  ),
   'qorv:users',
 ] as const;
 
