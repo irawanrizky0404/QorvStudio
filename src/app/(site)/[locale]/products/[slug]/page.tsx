@@ -29,6 +29,7 @@ import {
   SectionIntro,
   Tag,
 } from '@/components/ui/primitives';
+import { GalleryLightbox } from '@/components/ui/lightbox';
 
 export const revalidate = 300;
 
@@ -248,20 +249,7 @@ export default async function ProductDetailPage({
         <Section bordered>
           <Container>
             <SectionIntro lead={t.products.gallery} align="left" />
-            <div className="mt-12 grid gap-[3px] border-3 border-ink ruled sm:grid-cols-2">
-              {product.gallery.map((media, i) => (
-                <div key={i} className="bg-paper">
-                  <Media
-                    media={media}
-                    locale={locale}
-                    aspect="aspect-[4/3]"
-                    sizes="(max-width: 640px) 100vw, 45vw"
-                    slotLabel={`${name} ${i + 1}`}
-                    rounded="rounded-none"
-                  />
-                </div>
-              ))}
-            </div>
+            <GalleryLightbox items={product.gallery} locale={locale} label={name} />
           </Container>
         </Section>
       ) : null}

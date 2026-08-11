@@ -77,8 +77,8 @@ export const WORK_MEDIA: Record<string, Record<string, readonly [number, number]
   },
   "sleepstack": {
     "cover": [
-      800,
-      1000
+      1600,
+      900
     ],
     "hero": [
       1920,
@@ -103,8 +103,8 @@ export const WORK_MEDIA: Record<string, Record<string, readonly [number, number]
   },
   "cooldown": {
     "cover": [
-      800,
-      1200
+      1600,
+      900
     ],
     "hero": [
       1920,
@@ -133,8 +133,8 @@ export const WORK_MEDIA: Record<string, Record<string, readonly [number, number]
   },
   "dread-runaway": {
     "cover": [
-      1000,
-      660
+      1600,
+      900
     ],
     "hero": [
       1920,
@@ -167,7 +167,7 @@ export const WORK_MEDIA: Record<string, Record<string, readonly [number, number]
   },
   "f-this-party": {
     "cover": [
-      600,
+      1600,
       900
     ],
     "hero": [
@@ -223,7 +223,7 @@ export const WORK_MEDIA: Record<string, Record<string, readonly [number, number]
   },
   "myair0": {
     "cover": [
-      1000,
+      1600,
       900
     ],
     "hero": [
@@ -291,8 +291,8 @@ export const WORK_MEDIA: Record<string, Record<string, readonly [number, number]
   },
   "ghibli-interior": {
     "cover": [
-      800,
-      1200
+      1600,
+      900
     ],
     "hero": [
       1920,

@@ -81,7 +81,24 @@ for (const [num, slug] of Object.entries(SLUGS)) {
 
   if (!home || !hero) throw new Error(`${slug}: cover atau hero tidak ditemukan di sumber`);
 
-  totalOut += await emit(path.join(SOURCE, home), path.join(to, 'cover.webp'), 1600, slug, 'cover');
+  /*
+   * Sumber cover dipilih berdasarkan lebarnya, bukan namanya.
+   *
+   * Berkas `-home` dipotong khusus untuk kartu, tapi enam dari sebelas di
+   * antaranya lebih sempit dari 1200px — satu bahkan 600px. Kartu di kisi Karya
+   * dirender sekitar 450px CSS, yang di layar 2× menuntut ~900px, jadi berkas
+   * sekecil itu diperbesar paksa dan hasilnya lembek. Kelembekan itu terbaca
+   * sebagai warna yang pudar, bukan sebagai gambar yang buram.
+   *
+   * `-slug` selalu 1900px atau lebih. Rasionya lanskap sementara sebagian
+   * `-home` potret, tapi kartunya memakai `object-cover` — pemotongan diurus
+   * CSS. Ketajaman lebih penting daripada potongan yang sudah dipilih.
+   */
+  const homeMeta = await sharp(path.join(SOURCE, home)).metadata();
+  const coverSource = (homeMeta.width ?? 0) >= 1200 ? home : hero;
+  if (coverSource !== home) console.log(`    ${slug}: cover pakai -slug (${homeMeta.width}px terlalu kecil)`);
+
+  totalOut += await emit(path.join(SOURCE, coverSource), path.join(to, 'cover.webp'), 1600, slug, 'cover');
   totalOut += await emit(path.join(SOURCE, hero), path.join(to, 'hero.webp'), 2000, slug, 'hero');
   for (const [i, g] of gallery.entries()) {
     const key = String(i + 1).padStart(2, '0');

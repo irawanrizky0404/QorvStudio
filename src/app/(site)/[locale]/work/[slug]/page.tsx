@@ -15,6 +15,7 @@ import { Reveal, Parallax } from '@/components/motion/reveal';
 import { Button } from '@/components/ui/button';
 import { Media } from '@/components/ui/media';
 import { Card, Container, Section, SectionIntro, Tag } from '@/components/ui/primitives';
+import { GalleryLightbox } from '@/components/ui/lightbox';
 
 export const revalidate = 300;
 
@@ -210,20 +211,7 @@ export default async function ProjectDetailPage({
               *
               * Sel bergaris 3px, sama seperti Karya di beranda: satu perlakuan
               * untuk semua kisi gambar di situs ini. */}
-            <div className="mt-12 grid gap-[3px] border-3 border-ink ruled sm:grid-cols-2">
-              {project.gallery.map((media, i) => (
-                <div key={i} className="bg-paper">
-                  <Media
-                    media={media}
-                    locale={locale}
-                    aspect="aspect-[4/3]"
-                    sizes="(max-width: 640px) 100vw, 45vw"
-                    slotLabel={`${pickLocale(project.title, locale)} ${i + 1}`}
-                    rounded="rounded-none"
-                  />
-                </div>
-              ))}
-            </div>
+            <GalleryLightbox items={project.gallery} locale={locale} label={pickLocale(project.title, locale)} />
           </Container>
         </Section>
       ) : null}

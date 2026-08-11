@@ -55,8 +55,25 @@ export function Media({
           priority={priority}
           placeholder="blur"
           blurDataURL={BLUR_DATA_URL}
+          quality={90}
           className={cn(
-            'object-cover grayscale-[0.45] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.04] group-hover:grayscale-0',
+            /*
+             * Tanpa filter abu-abu.
+             *
+             * Versi sebelumnya merender setiap gambar pada `grayscale-[0.45]` dan
+             * baru mengembalikan warnanya saat di-hover. Itu efek yang lazim di
+             * template portofolio, dan di sini ia salah dua kali.
+             *
+             * Karyanya sendiri berbasis warna — kemasan, identitas merek, render
+             * 3D. Menahan 45% warnanya di tampilan pertama berarti menyembunyikan
+             * hal yang justru sedang dijual. Dan di layar sentuh tidak ada hover
+             * sama sekali, jadi separuh pengunjung tidak pernah melihat warna
+             * aslinya.
+             *
+             * `quality={90}`, bukan 75 bawaan: sumbernya sudah WebP q82, dan
+             * enkode ulang di angka rendah menumpuk artefak di atas artefak.
+             */
+            'object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.04]',
             imageClassName,
           )}
         />

@@ -7,7 +7,12 @@ import { PRODUCT_MEDIA } from './product-media';
  *
  * Empat aplikasi yang benar-benar dibangun, tiga di antaranya bisa dibuka
  * sekarang juga. Isinya diringkas dari README masing-masing repositori di
- * `QorvStudio/PRODUCT/`; cover-nya tangkapan layar dari situs live-nya.
+ * `QorvStudio/PRODUCT/`.
+ *
+ * Cover-nya dirancang, bukan tangkapan layar — lihat `make-product-covers.tsx`.
+ * Galerinya justru tangkapan layar asli dari aplikasi yang berjalan, diambil
+ * oleh `capture-product-shots.ts`. Halaman yang butuh login tidak diambil, jadi
+ * Wakaf RW hanya punya satu gambar sampai ada cara melihatnya tanpa akun.
  *
  * ── Yang diambil apa adanya, dan yang disusun ───────────────────────────────
  *
@@ -29,13 +34,28 @@ function cover(slug: string, alt: ReturnType<typeof L>): MediaRef {
   return { url: `/images/products/${slug}/cover.webp`, alt, width: size[0], height: size[1] };
 }
 
-/** Slot kosong untuk produk yang belum punya tangkapan layar. */
-const PLACEHOLDER: MediaRef = {
-  url: '/images/products/qorv-commerce/cover.webp',
-  alt: L('QORV product', 'Produk QORV'),
-  width: 1568,
-  height: 754,
-};
+/**
+ * Galeri: setiap tangkapan layar bernomor yang ada di manifes, urut.
+ *
+ * Daftarnya dibaca dari manifes ketimbang ditulis tangan karena jumlahnya tidak
+ * seragam — tiga aplikasi punya enam halaman publik, Wakaf RW cuma satu karena
+ * sisanya di balik login. Menulis `01`–`06` untuk semuanya berarti empat berkas
+ * yang tidak ada dan halaman produk yang melempar saat dirender.
+ */
+function gallery(slug: string, label: ReturnType<typeof L>): MediaRef[] {
+  const entries = PRODUCT_MEDIA[slug];
+  if (!entries) throw new Error(`product-media: ${slug} tidak ada.`);
+
+  return Object.entries(entries)
+    .filter(([key]) => /^\d+$/.test(key))
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, size]) => ({
+      url: `/images/products/${slug}/${key}.webp`,
+      alt: L(`${label.en} — screen ${Number(key)}`, `${label.id} — layar ${Number(key)}`),
+      width: size[0],
+      height: size[1],
+    }));
+}
 
 export const mockProducts: Product[] = [
   {
@@ -49,7 +69,7 @@ export const mockProducts: Product[] = [
     type: 'web-app',
     productStatus: 'beta',
     cover: cover('qorv-commerce', L('QORV Commerce storefront', 'Etalase QORV Commerce')),
-    gallery: [],
+    gallery: gallery('qorv-commerce', L('QORV Commerce', 'QORV Commerce')),
     demoVideoUrl: null,
     description: L(
       'Every deployment is single-tenant: one application, one database, one store identity, and full operational control.\n\nThe admin dashboard covers revenue, orders, products, buyers, critical stock, and best sellers, plus CRUD for products, nested categories, vouchers, flash sales, and storefront decoration. Order handling spans payment status, tracking numbers, transfer receipts, returns, reviews, discussion threads, per-order live chat, notifications, reports, staff, and an audit log.\n\nThe buyer storefront carries a dynamic home built from store configuration, catalogue with search and category filters, slug-based product detail with gallery and variants, cart, wishlist, saved addresses, checkout with transfer-receipt upload, order history, and account. Price, stock, shipping, vouchers, and order totals are all revalidated by the backend rather than trusted from the client.\n\nIdentity, colours, fonts, hero, section order, card style, banners, contact details, social links, bank accounts, and footer content live in store settings — changeable without touching source code.',
@@ -167,8 +187,8 @@ export const mockProducts: Product[] = [
     ),
     type: 'web-app',
     productStatus: 'coming-soon',
-    cover: PLACEHOLDER,
-    gallery: [],
+    cover: cover('clipper-studio', L('Clipper Studio editor', 'Editor Clipper Studio')),
+    gallery: gallery('clipper-studio', L('Clipper Studio', 'Clipper Studio')),
     demoVideoUrl: null,
     description: L(
       'A web-based timeline editor built for clipping long-form recordings — livestreams, podcasts, gameplay — into short-form content.\n\nEvery AI feature is backed by a service you run yourself. Subtitles come from faster-whisper running locally. Metadata, chapter generation, and subtitle translation go through LM Studio, an OpenAI-compatible local LLM server. Text-to-speech voiceover uses Kokoro-FastAPI. The voice changer is an in-app audio effect with no external service at all.\n\nNo video, audio, or transcript leaves your machine for AI processing.\n\nThe data model follows a two-level Project hierarchy: a Root Project holds a shared media pool with no timeline of its own, and Sub-Projects created inside it each own their own tracks, clips, and subtitles. Exports become managed video records surfaced in Video Manager, scoped back to the originating Root Project.',
@@ -288,7 +308,7 @@ export const mockProducts: Product[] = [
     type: 'web-app',
     productStatus: 'available',
     cover: cover('qorv-catering', L('QORV Catering catalogue', 'Katalog QORV Catering')),
-    gallery: [],
+    gallery: gallery('qorv-catering', L('QORV Catering', 'QORV Catering')),
     demoVideoUrl: null,
     description: L(
       'A public menu catalogue with photos, prices, categories, filters, and search — deliberately without in-app checkout.\n\nThat absence is the design decision. Catering orders involve portion counts, dates, delivery, and negotiation; a checkout button would flatten all of it into a transaction that then has to be re-opened as a conversation anyway. The order button opens WhatsApp with the message already filled in.\n\nVisitors can leave a star rating and a review without creating an account. The admin dashboard, behind login, covers an overview of totals and average rating, full menu CRUD with main photo and gallery upload, category management, review moderation, and staff accounts.',
@@ -382,8 +402,8 @@ export const mockProducts: Product[] = [
     ),
     type: 'web-app',
     productStatus: 'beta',
-    cover: cover('qorv-wakaf', L('WakafRW sign-in', 'Halaman masuk WakafRW')),
-    gallery: [],
+    cover: cover('wakaf-rw', L('WakafRW sign-in', 'Halaman masuk WakafRW')),
+    gallery: gallery('wakaf-rw', L('WakafRW', 'WakafRW')),
     demoVideoUrl: null,
     description: L(
       'This is not a payment gateway. No money moves through the application — there is no balance, no wallet, no auto-debit. Cash still goes to the treasurer or by transfer to the RW account. Only the bookkeeping changes.\n\nThree roles, three views. Residents see their outstanding balance and progress, the RW account number with one-tap copy, transfer-receipt upload, and printable history and receipts. The RW treasurer works a verification queue — one by one or in bulk — can correct the amount while approving, must give a reason when rejecting, and records cash or transfer payments from the bank statement. RT officers see only their own RT: dashboard, household list, export, and print.\n\nEvery rupiah leaves a trail that can be followed back.',
