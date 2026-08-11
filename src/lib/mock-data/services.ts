@@ -8,15 +8,26 @@ import { mockCover, mockGallery } from './images';
  *  - svc_consulting  → zero packages (quote-only path)
  *  - svc_packaging   → Basic + Gold only (partial ladder)
  *
- * All six are published, so the services grid fills evenly. Draft coverage now
- * sits on proj_atlas and prod_ledger instead.
- *  - svc_web         → a null-priced Premium tier ("Contact us")
+ * All six are published, so the services grid fills evenly.
+ *
+ * ── Harga ───────────────────────────────────────────────────────────────────
+ *
+ * Angkanya **disusun**, bukan diambil dari daftar harga yang sudah ada — tidak
+ * ada satupun daftar semacam itu di sumber manapun. Yang diberikan hanya
+ * arahannya: terjangkau, bukan puluhan juta.
+ *
+ * Rentangnya Rp 750 rb sampai Rp 18 jt per proyek, disusun sebagai tangga tiga
+ * tingkat per layanan dengan lompatan sekitar 2–2,5 kali di tiap anak tangga.
+ * Angka sebelumnya Rp 18–210 juta; itu karangan dan bertentangan dengan arahan.
+ *
+ * **Periksa dan sesuaikan lewat panel admin.** Ini titik awal yang masuk akal,
+ * bukan harga yang dikonfirmasi.
  */
 
 const webPackages = [
   {
     tier: 'basic' as const,
-    price: 45_000_000,
+    price: 3_500_000,
     currency: 'IDR' as const,
     period: 'project' as const,
     description: L(
@@ -33,7 +44,7 @@ const webPackages = [
   },
   {
     tier: 'gold' as const,
-    price: 120_000_000,
+    price: 8_500_000,
     currency: 'IDR' as const,
     period: 'project' as const,
     description: L(
@@ -52,7 +63,7 @@ const webPackages = [
   },
   {
     tier: 'premium' as const,
-    price: null,
+    price: 18_000_000,
     currency: 'IDR' as const,
     period: 'project' as const,
     description: L(
@@ -73,7 +84,7 @@ const webPackages = [
 const animationPackages = [
   {
     tier: 'basic' as const,
-    price: 18_000_000,
+    price: 1_500_000,
     currency: 'IDR' as const,
     period: 'project' as const,
     description: L(
@@ -89,7 +100,7 @@ const animationPackages = [
   },
   {
     tier: 'gold' as const,
-    price: 55_000_000,
+    price: 4_000_000,
     currency: 'IDR' as const,
     period: 'project' as const,
     description: L(
@@ -107,7 +118,7 @@ const animationPackages = [
   },
   {
     tier: 'premium' as const,
-    price: 140_000_000,
+    price: 9_000_000,
     currency: 'IDR' as const,
     period: 'project' as const,
     description: L(
@@ -127,7 +138,7 @@ const animationPackages = [
 const packagingPackages = [
   {
     tier: 'basic' as const,
-    price: 25_000_000,
+    price: 1_500_000,
     currency: 'IDR' as const,
     period: 'project' as const,
     description: L(
@@ -143,7 +154,7 @@ const packagingPackages = [
   },
   {
     tier: 'gold' as const,
-    price: 75_000_000,
+    price: 3_500_000,
     currency: 'IDR' as const,
     period: 'project' as const,
     description: L(
@@ -161,7 +172,7 @@ const packagingPackages = [
   },
   {
     tier: 'premium' as const,
-    price: 165_000_000,
+    price: 7_500_000,
     currency: 'IDR' as const,
     period: 'project' as const,
     description: L(
@@ -182,7 +193,7 @@ const packagingPackages = [
 const consultingPackages = [
   {
     tier: 'basic' as const,
-    price: 18_000_000,
+    price: 750_000,
     currency: 'IDR' as const,
     period: 'project' as const,
     description: L(
@@ -198,7 +209,7 @@ const consultingPackages = [
   },
   {
     tier: 'gold' as const,
-    price: 45_000_000,
+    price: 2_000_000,
     currency: 'IDR' as const,
     period: 'project' as const,
     description: L(
@@ -215,7 +226,7 @@ const consultingPackages = [
   },
   {
     tier: 'premium' as const,
-    price: 120_000_000,
+    price: 4_500_000,
     currency: 'IDR' as const,
     period: 'project' as const,
     description: L(
@@ -235,7 +246,7 @@ const consultingPackages = [
 const brandPackages = [
   {
     tier: 'basic' as const,
-    price: 35_000_000,
+    price: 2_500_000,
     currency: 'IDR' as const,
     period: 'project' as const,
     description: L(
@@ -251,7 +262,7 @@ const brandPackages = [
   },
   {
     tier: 'gold' as const,
-    price: 95_000_000,
+    price: 6_000_000,
     currency: 'IDR' as const,
     period: 'project' as const,
     description: L(
@@ -269,7 +280,7 @@ const brandPackages = [
   },
   {
     tier: 'premium' as const,
-    price: 210_000_000,
+    price: 12_000_000,
     currency: 'IDR' as const,
     period: 'project' as const,
     description: L(
@@ -289,7 +300,7 @@ const brandPackages = [
 const uiuxPackages = [
   {
     tier: 'basic' as const,
-    price: 30_000_000,
+    price: 2_500_000,
     currency: 'IDR' as const,
     period: 'project' as const,
     description: L(
@@ -305,7 +316,7 @@ const uiuxPackages = [
   },
   {
     tier: 'gold' as const,
-    price: 85_000_000,
+    price: 6_000_000,
     currency: 'IDR' as const,
     period: 'project' as const,
     description: L(
@@ -322,7 +333,7 @@ const uiuxPackages = [
   },
   {
     tier: 'premium' as const,
-    price: 180_000_000,
+    price: 13_000_000,
     currency: 'IDR' as const,
     period: 'project' as const,
     description: L(

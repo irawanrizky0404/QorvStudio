@@ -5,7 +5,7 @@ import { mockProjects } from '@/lib/mock-data/projects';
 import { mockServices } from '@/lib/mock-data/services';
 import { mockProducts } from '@/lib/mock-data/products';
 import { mockInquiries, mockSettings } from '@/lib/mock-data/inquiries';
-import { getDriver, seededKey, storeKey } from '../driver';
+import { getDriver, seededKey, versionedKey } from '../driver';
 import { Collection } from './store';
 
 /**
@@ -59,7 +59,9 @@ export const productsCollection = new Collection<Product>({
 /* Kunci dihitung saat dipakai, bukan saat modul dievaluasi — `seededKey`
  * menanyai driver, dan driver tidak boleh dipilih saat build. */
 const inquiriesKey = (): string => seededKey('inquiries', mockInquiries);
-const SETTINGS_KEY = storeKey('settings');
+/* Ikut berversi: setelan lama memuat email dan nomor karangan, dan tanpa ini
+   nilai barunya tidak akan pernah terpakai. */
+const settingsKey = (): string => versionedKey('settings');
 
 export async function readInquiries(): Promise<Inquiry[]> {
   return getDriver().loadOrSeed<Inquiry[]>(inquiriesKey(), () => structuredClone(mockInquiries));
@@ -70,10 +72,10 @@ export async function writeInquiries(items: Inquiry[]): Promise<void> {
 }
 
 export async function readSettings(): Promise<Settings> {
-  return getDriver().loadOrSeed<Settings>(SETTINGS_KEY, () => structuredClone(mockSettings));
+  return getDriver().loadOrSeed<Settings>(settingsKey(), () => structuredClone(mockSettings));
 }
 
 export async function writeSettings(next: Settings): Promise<Settings> {
-  await getDriver().save(SETTINGS_KEY, next);
+  await getDriver().save(settingsKey(), next);
   return next;
 }

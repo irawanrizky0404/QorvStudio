@@ -114,12 +114,22 @@ export interface FaqItem {
 
 /* ── Project ──────────────────────────────────────────────────────────────── */
 
+/**
+ * Kategori karya.
+ *
+ * `illustration` dan `ui-ux` ditambahkan saat karya sungguhan masuk. Tanpa
+ * keduanya, delapan dari sebelas proyek terpaksa masuk `3d-animation` dan
+ * penyaringnya kehilangan gunanya: satu tombol yang menampilkan hampir
+ * segalanya bukan penyaring, hanya hiasan.
+ */
 export type ProjectCategory =
   | 'web-app'
   | 'mobile-app'
   | '3d-animation'
   | 'packaging'
-  | 'branding';
+  | 'branding'
+  | 'illustration'
+  | 'ui-ux';
 
 export const PROJECT_CATEGORIES: readonly ProjectCategory[] = [
   'web-app',
@@ -127,6 +137,8 @@ export const PROJECT_CATEGORIES: readonly ProjectCategory[] = [
   '3d-animation',
   'packaging',
   'branding',
+  'illustration',
+  'ui-ux',
 ];
 
 export interface ProjectResult {

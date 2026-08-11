@@ -195,6 +195,26 @@ export function storeKey(name: string): string {
 }
 
 /**
+ * Versi seed.
+ *
+ * Menaikkannya membuat setiap koleksi berseed pindah ke kunci baru, sehingga
+ * data seed yang baru benar-benar dipakai. Ini **satu-satunya** cara mengganti
+ * isi yang sudah terlanjur tersimpan: `loadOrSeed` sengaja tidak menimpa kunci
+ * yang sudah ada, karena kalau ia menimpa, setiap deploy akan menghapus
+ * pekerjaan operator.
+ *
+ * Data lama tidak dihapus — ia tetap ada di kunci versi sebelumnya dan bisa
+ * dibaca kembali kalau perlu. Yang berpindah hanya kunci yang dibaca aplikasi.
+ *
+ * Naikkan hanya kalau memang bermaksud membuang isi yang sekarang. Suntingan
+ * apa pun yang dibuat lewat panel pada versi lama tidak ikut pindah.
+ *
+ *   v1  data contoh saat membangun
+ *   v2  karya, produk, dan setelan sungguhan
+ */
+const SEED_VERSION = 2;
+
+/**
  * Kunci penyimpanan untuk sebuah koleksi berseed.
  *
  * Pada driver memori, tanda tangan seed ikut masuk ke kunci. Menambah record ke
@@ -203,11 +223,21 @@ export function storeKey(name: string): string {
  * Suntingan yang dibuat lewat panel tetap hidup lintas HMR karena tidak pernah
  * mengubah seed.
  *
- * Pada driver persisten, tanda tangannya diabaikan. Menyunting berkas seed tidak
- * boleh menyembunyikan data produksi di balik kunci baru.
+ * Pada driver persisten, yang dipakai `SEED_VERSION` — bukan tanda tangan seed.
+ * Kalau tanda tangannya yang dipakai, menambah satu record ke berkas seed akan
+ * diam-diam menyembunyikan seluruh data produksi di balik kunci baru.
  */
 export function seededKey(name: string, seed: ReadonlyArray<{ id: string }>): string {
-  const key = storeKey(name);
-  if (getDriver().persistent) return key;
-  return `${key}#${seed.length}:${seed.map((item) => item.id).join(',')}`;
+  if (getDriver().persistent) return `qorv:v${SEED_VERSION}:${name}`;
+  return `${storeKey(name)}#${seed.length}:${seed.map((item) => item.id).join(',')}`;
+}
+
+/**
+ * Kunci berversi untuk nilai tunggal yang juga berseed — setelan studio.
+ *
+ * Terpisah dari `seededKey` karena setelan bukan koleksi dan tidak punya daftar
+ * id untuk ditandatangani.
+ */
+export function versionedKey(name: string): string {
+  return getDriver().persistent ? `qorv:v${SEED_VERSION}:${name}` : storeKey(name);
 }

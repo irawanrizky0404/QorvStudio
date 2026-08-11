@@ -21,12 +21,16 @@ import { Redis } from '@upstash/redis';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
+/*
+ * Kunci koleksi berversi — lihat `SEED_VERSION` di `src/lib/repo/driver.ts`.
+ * `qorv:users` tidak berversi: akun operator harus selamat dari pergantian seed.
+ */
 const KEYS = [
-  'qorv:projects',
-  'qorv:services',
-  'qorv:products',
-  'qorv:inquiries',
-  'qorv:settings',
+  'qorv:v2:projects',
+  'qorv:v2:services',
+  'qorv:v2:products',
+  'qorv:v2:inquiries',
+  'qorv:v2:settings',
   'qorv:users',
 ] as const;
 

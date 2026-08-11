@@ -12,7 +12,8 @@
     "test": "node --conditions=react-server --import tsx --test tests/unit.test.ts",
     "verify": "npm run typecheck && npm run lint && npm run test && npm run build",
     "logos": "node --import tsx scripts/make-logos.tsx",
-    "backup": "node --import tsx --env-file-if-exists=.env.local scripts/backup.ts"
+    "backup": "node --import tsx --env-file-if-exists=.env.local scripts/backup.ts",
+    "import:work": "node --import tsx scripts/import-work-images.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "5.7.1",

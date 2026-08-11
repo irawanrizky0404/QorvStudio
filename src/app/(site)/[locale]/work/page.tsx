@@ -25,6 +25,8 @@ const CATEGORY_LABEL: Record<string, string> = {
   '3d-animation': '3D / Animation',
   packaging: 'Packaging',
   branding: 'Branding',
+  illustration: 'Illustration',
+  'ui-ux': 'UI/UX',
 };
 
 export async function generateMetadata({
