@@ -29,10 +29,20 @@ export function GalleryLightbox({
   items,
   locale,
   label,
+  aspect = 'aspect-[4/3]',
 }: {
   items: MediaRef[];
   locale: Locale;
   label: string;
+  /**
+   * Rasio petak galeri.
+   *
+   * Karya memakai 4:3 — rasio foto dan render. Produk memakai 21:10, hampir
+   * persis rasio jendela peramban: dipaksa ke 4:3, sepertiga lebar tangkapan
+   * dashboard terpotong, dan yang hilang justru sidebar navigasi di kiri dan
+   * panel properti di kanan — bagian yang menunjukkan aplikasinya punya isi.
+   */
+  aspect?: string;
 }): ReactNode {
   const [open, setOpen] = useState<number | null>(null);
 
@@ -79,7 +89,7 @@ export function GalleryLightbox({
             <Media
               media={media}
               locale={locale}
-              aspect="aspect-[4/3]"
+              aspect={aspect}
               sizes="(max-width: 640px) 100vw, 45vw"
               slotLabel={`${label} ${i + 1}`}
               rounded="rounded-none"

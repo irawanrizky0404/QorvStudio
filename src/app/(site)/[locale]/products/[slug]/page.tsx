@@ -249,7 +249,7 @@ export default async function ProductDetailPage({
         <Section bordered>
           <Container>
             <SectionIntro lead={t.products.gallery} align="left" />
-            <GalleryLightbox items={product.gallery} locale={locale} label={name} />
+            <GalleryLightbox items={product.gallery} locale={locale} label={name} aspect="aspect-[21/10]" />
           </Container>
         </Section>
       ) : null}

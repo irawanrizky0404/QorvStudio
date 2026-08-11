@@ -1,4 +1,4 @@
-/* DIHASILKAN oleh scripts/make-product-covers.tsx dan capture-product-shots.ts. */
+/* DIHASILKAN oleh scripts/make-product-covers.tsx dan import-product-shots.ts. */
 export const PRODUCT_MEDIA: Record<string, Record<string, readonly [number, number]>> =
 {
   "qorv-commerce": {
@@ -8,25 +8,33 @@ export const PRODUCT_MEDIA: Record<string, Record<string, readonly [number, numb
     ],
     "01": [
       1600,
-      1000
+      761
     ],
     "02": [
       1600,
-      1000
+      766
     ],
     "03": [
       1600,
-      1000
+      761
     ],
     "04": [
       1600,
-      1000
+      773
     ],
     "05": [
       1600,
-      1000
+      762
     ],
     "06": [
+      1600,
+      771
+    ],
+    "07": [
+      1600,
+      1000
+    ],
+    "08": [
       1600,
       1000
     ]
@@ -38,25 +46,29 @@ export const PRODUCT_MEDIA: Record<string, Record<string, readonly [number, numb
     ],
     "01": [
       1600,
-      1000
+      764
     ],
     "02": [
       1600,
-      1000
+      754
     ],
     "03": [
       1600,
-      1000
+      771
     ],
     "04": [
       1600,
-      1000
+      759
     ],
     "05": [
       1600,
-      1000
+      761
     ],
     "06": [
+      1600,
+      772
+    ],
+    "07": [
       1600,
       1000
     ]
@@ -68,19 +80,19 @@ export const PRODUCT_MEDIA: Record<string, Record<string, readonly [number, numb
     ],
     "01": [
       1600,
-      1000
+      761
     ],
     "02": [
       1600,
-      1000
+      764
     ],
     "03": [
       1600,
-      1000
+      772
     ],
     "04": [
       1600,
-      1000
+      781
     ],
     "05": [
       1600,
@@ -97,6 +109,22 @@ export const PRODUCT_MEDIA: Record<string, Record<string, readonly [number, numb
       1200
     ],
     "01": [
+      1600,
+      772
+    ],
+    "02": [
+      1600,
+      760
+    ],
+    "03": [
+      1600,
+      764
+    ],
+    "04": [
+      1600,
+      754
+    ],
+    "05": [
       1600,
       1000
     ]

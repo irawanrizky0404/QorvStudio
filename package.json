@@ -17,7 +17,8 @@
     "product:covers": "node --import tsx scripts/make-product-covers.tsx",
     "product:shots": "node --import tsx scripts/capture-product-shots.ts",
     "product:profile": "node --import tsx scripts/open-shot-profile.ts",
-    "product:shots:auth": "node --import tsx scripts/capture-product-shots.ts --authed"
+    "product:shots:auth": "node --import tsx scripts/capture-product-shots.ts --authed",
+    "product:import": "node --import tsx scripts/import-product-shots.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "5.7.1",

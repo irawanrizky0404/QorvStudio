@@ -12,7 +12,7 @@ const eslintConfig = [
   {
     /* `scripts/` adalah perkakas baris perintah, bukan kode yang dikirim ke
      * pengguna: mencetak progres ke konsol memang tugasnya. */
-    ignores: ['.next/**', 'node_modules/**', 'next-env.d.ts', 'tests/**', 'scripts/**'],
+    ignores: ['.next/**', '.cache/**', 'node_modules/**', 'next-env.d.ts', 'tests/**', 'scripts/**'],
   },
   {
     rules: {

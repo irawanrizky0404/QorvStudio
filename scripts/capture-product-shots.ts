@@ -16,9 +16,15 @@
  * punya URL publik jadi diambil dari dev server lokal (lihat CLIPPER di bawah —
  * nyalakan dulu sebelum menjalankan skrip ini).
  *
- * Halaman yang butuh login tidak diambil. Itu memangkas Wakaf RW jadi sedikit
- * sekali halaman, dan itu memang batas yang sebenarnya — bukan sesuatu yang
- * ditutupi dengan gambar karangan.
+ * Halaman yang butuh login tidak diambil — skrip ini tidak pernah mengisi form
+ * login. Yang di balik login masuk lewat `import-product-shots.ts`, dari
+ * tangkapan yang diambil operator sendiri.
+ *
+ * Keluarannya bernama `pub-NN.webp`, bukan `NN.webp`. Galerinya dirakit oleh
+ * skrip impor, yang menulis `NN.webp` — dan pernah terjadi skrip impor membaca
+ * berkas publik dari folder tujuan yang sudah ditimpanya sendiri pada jalan
+ * sebelumnya, sehingga tangkapan publiknya berganti jadi salinan dashboard.
+ * Ruang nama terpisah membuat itu tidak bisa terjadi lagi.
  */
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { execFile } from 'node:child_process';
@@ -30,7 +36,13 @@ const run = promisify(execFile);
 
 const CHROME =
   process.env.CHROME_PATH ?? 'C:/Program Files/Google/Chrome/Application/chrome.exe';
-const OUT = path.join(process.cwd(), 'public', 'images', 'products');
+/*
+ * Bukan di `public/`: keluaran skrip ini bahan mentah untuk
+ * `import-product-shots.ts`, bukan aset yang disajikan. Menaruhnya di `public/`
+ * berarti belasan berkas ikut ter-deploy padahal tidak pernah diminta satu
+ * permintaan pun.
+ */
+const OUT = path.join(process.cwd(), 'assets', 'product-public-shots');
 const TMP = path.join(process.cwd(), '.cache', 'product-shots');
 const MEDIA = path.join(process.cwd(), 'src', 'lib', 'mock-data', 'product-media.ts');
 
@@ -177,9 +189,8 @@ async function shoot(url: string, png: string): Promise<void> {
 
 await mkdir(TMP, { recursive: true });
 
-/* Manifes cover ditulis oleh skrip cover; galeri ditambahkan ke atasnya, bukan
-   menggantikannya. Membaca ulang berkasnya lebih murah daripada menjalankan
-   ulang kedua skrip setiap kali salah satunya berubah. */
+/* Manifes hanya dibaca-tulis oleh skrip cover dan skrip impor. Skrip ini cuma
+   menghasilkan berkas gambar, jadi manifesnya dibiarkan apa adanya. */
 const { PRODUCT_MEDIA } = (await import(
   /* @vite-ignore */ 'file://' + MEDIA.replace(/\\/g, '/')
 )) as { PRODUCT_MEDIA: Record<string, Record<string, readonly [number, number]>> };
@@ -228,10 +239,10 @@ for (const [slug, urls] of targets) {
       .webp({ quality: 84 })
       .toBuffer({ resolveWithObject: true });
     await writeFile(path.join(dir, `${key}.webp`), data);
-    (manifest[slug] ??= {})[key] = [info.width, info.height];
+    (manifest[slug] ??= {})[`pub-${key}`] = [info.width, info.height];
   }
 
-  const ok = Object.keys(manifest[slug] ?? {}).filter((k) => /^\d+$/.test(k)).length;
+  const ok = Object.keys(manifest[slug] ?? {}).filter((k) => k.startsWith('pub-')).length;
   console.log(`  ${slug.padEnd(16)} ${ok}/${urls.length} tangkapan`);
 }
 
